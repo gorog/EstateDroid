@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <PreferenceCategory
+        android:summary="@string/user_password_info_summary"
+        android:title="@string/user_password_info_title" >
+        <EditTextPreference
+            android:key="username"
+            android:summary="@string/user_summary"
+            android:title="@string/user_title" />
+        <EditTextPreference
+            android:key="password"
+            android:summary="@string/password_summary"
+            android:title="@string/password_title" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

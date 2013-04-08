@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">EstateDroid</string>
+    <string name="action_settings">Beállítások</string>
+    <string name="hello_world">Hello világ!</string>
+    <string name="user_name">Felhasználónév</string>
+    <string name="password">Jelszó</string>
+    <string name="login">Bejelentkezés</string>
+    <string name="loading_please_wait">Betöltés. Kérem várjon&#8230;</string>
+
+    <!-- PrefsActivity -->
+    <!-- TODO -->
+    <string name="user_password_info_summary">Username and password information</string>
+    <string name="user_password_info_title">Login information</string>
+    <string name="user_summary">Please enter your login username</string>
+    <string name="user_title">Username</string>
+    <string name="password_summary">Enter your password</string>
+    <string name="password_title">Password</string>
+    <string name="settings_title">Settings</string>
+    <string name="checkBox_summary">Keep me logged in</string>
+    <string name="checkBox_title">On/Off</string>
+
+</resources>
