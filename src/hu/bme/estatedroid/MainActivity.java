@@ -1,6 +1,7 @@
 package hu.bme.estatedroid;
 
 import hu.bme.estatedroid.activity.PrefsActivity;
+import hu.bme.estatedroid.activity.SearchActivity;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -20,6 +21,7 @@ public class MainActivity extends SherlockActivity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getSupportMenuInflater().inflate(R.menu.main, menu);
+
 		return true;
 	}
 
@@ -28,6 +30,10 @@ public class MainActivity extends SherlockActivity {
 		int itemId = item.getItemId();
 		if (itemId == R.id.action_settings) {
 			Intent intent = new Intent(getBaseContext(), PrefsActivity.class);
+			startActivity(intent);
+			return true;
+		} else if (itemId == R.id.action_search) {
+			Intent intent = new Intent(getBaseContext(), SearchActivity.class);
 			startActivity(intent);
 			return true;
 		} else {

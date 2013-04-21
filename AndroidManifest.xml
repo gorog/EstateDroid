@@ -26,6 +26,10 @@
         </activity>
         <activity android:name="hu.bme.estatedroid.activity.LoginActivity" >
         </activity>
+        <activity android:name="hu.bme.estatedroid.activity.SearchActivity" >
+        </activity>
+        <activity android:name="hu.bme.estatedroid.activity.ResultActivity" >
+        </activity>
         <activity
             android:name="hu.bme.estatedroid.activity.PrefsActivity"
             android:theme="@android:style/Theme.Black.NoTitleBar" >

@@ -2,23 +2,25 @@
 <resources>
 
     <string name="app_name">EstateDroid</string>
-    <string name="action_settings">Beállítások</string>
     <string name="hello_world">Hello világ!</string>
     <string name="user_name">Felhasználónév</string>
     <string name="password">Jelszó</string>
     <string name="login">Bejelentkezés</string>
     <string name="loading_please_wait">Betöltés. Kérem várjon&#8230;</string>
 
+    <!-- Menu -->
+    <string name="action_settings">Beállítások</string>
+    <string name="action_search">Keresés</string>
+    <string name="action_favorites">Kedvencek</string>
+    <string name="action_notifications">Jelzések</string>
+    
     <!-- PrefsActivity -->
-    <!-- TODO -->
-    <string name="user_password_info_summary">Username and password information</string>
-    <string name="user_password_info_title">Login information</string>
-    <string name="user_summary">Please enter your login username</string>
-    <string name="user_title">Username</string>
-    <string name="password_summary">Enter your password</string>
-    <string name="password_title">Password</string>
-    <string name="settings_title">Settings</string>
-    <string name="checkBox_summary">Keep me logged in</string>
-    <string name="checkBox_title">On/Off</string>
+    <string name="user_password_info_summary">Felhasználónév és jelszó</string>
+    <string name="user_password_info_title">Bejelentkezési információ</string>
+    <string name="user_summary">Írd be a felhasználónevedet</string>
+    <string name="user_title">Felhasználónév</string>
+    <string name="password_summary">Írd be a jelszavadat</string>
+    <string name="password_title">Jelszó</string>
+    <string name="settings_title">Beállítások</string>
 
 </resources>

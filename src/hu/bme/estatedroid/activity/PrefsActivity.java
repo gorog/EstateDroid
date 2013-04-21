@@ -4,6 +4,7 @@ import hu.bme.estatedroid.R;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 
+
 public class PrefsActivity extends PreferenceActivity {
 
 	@Override
