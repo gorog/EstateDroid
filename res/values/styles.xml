@@ -4,6 +4,10 @@
         <item name="actionBarStyle">@style/Widget.MyApp.ActionBar</item>
         <item name="actionMenuTextColor">@color/text_color</item>
         <item name="android:textColor">@color/text_color</item>
+        <item name="android:autoCompleteTextViewStyle">@style/AutoCompleteTextViewLight</item>
+        <item name="android:dropDownItemStyle">@style/Widget.DropDownItemLight</item>
+        <item name="android:spinnerItemStyle">@style/SpinnerItem</item>
+        <item name="android:spinnerDropDownItemStyle">@style/SpinnerDropDownItem</item>
     </style>
 
     <style name="Widget.MyApp.ActionBar" parent="Widget.Sherlock.Light.ActionBar.Solid.Inverse">
@@ -13,9 +17,26 @@
     <style name="Widget.MyApp.TitleTextStyle" parent="TextAppearance.Sherlock.Widget.ActionBar.Title">
         <item name="android:textColor">@color/text_color</item>
     </style>
-    
+
     <style name="Widget.Button" parent="@style/Widget">
         <item name="android:textColor">@color/text_color</item>
+    </style>
+
+    <style name="AutoCompleteTextViewLight" parent="@android:style/Widget.AutoCompleteTextView">
+        <item name="android:textColor">@color/text_color_dark</item>
+    </style>
+
+    <style name="Widget.DropDownItemLight" parent="@android:style/Widget.DropDownItem">
+        <item name="android:textColor">@color/text_color_dark</item>
+    </style>
+
+    <style name="SpinnerItem">
+        <item name="android:textColor">@color/text_color_dark</item>
+        <item name="android:maxHeight">10dip</item>
+    </style>
+
+    <style name="SpinnerDropDownItem">
+        <item name="android:textColor">@color/text_color_dark</item>
     </style>
 
     <!-- Application theme. -->

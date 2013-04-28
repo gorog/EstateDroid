@@ -10,12 +10,13 @@
     <string name="login">Login</string>
     <string name="logoDescription">EstateDroid logo</string>
     <string name="loading_please_wait">Loading. Please wait&#8230;</string>
-    
+
     <!-- Menu -->
     <string name="action_settings">Settings</string>
     <string name="action_search">Search</string>
     <string name="action_favorites">Favorites</string>
     <string name="action_notifications">Notifications</string>
+    <string name="action_own">Own profile</string>
 
     <!-- PrefsActivity -->
     <string name="user_password_info_summary">Username and password information</string>
@@ -25,5 +26,39 @@
     <string name="password_summary">Enter your password</string>
     <string name="password_title">Password</string>
     <string name="settings_title">Settings</string>
+
+    <!-- DateRefreshActivity -->
+    <string name="cities_refreshing">The cities are refreshing</string>
+    <string name="cities_refreshed">The cities have been refreshed</string>
+    <string name="countries_refreshing">The countries are refreshing</string>
+    <string name="countries_refreshed">The countries have been refreshed</string>
+    <string name="counties_refreshing">The counties are refreshing</string>
+    <string name="counties_refreshed">The counties have been refreshed</string>
+    <string name="heatings_refreshing">The heatings are refreshing</string>
+    <string name="heatings_refreshed">The heatings have been refreshed</string>
+    <string name="notificationtypes_refreshing">The notification types are refreshing</string>
+    <string name="notificationtypes_refreshed">The notification types have been refreshed</string>
+    <string name="offers_refreshing">The offers are refreshing</string>
+    <string name="offers_refreshed">The offers have been refreshed</string>
+    <string name="parkings_refreshing">The parking types are refreshing</string>
+    <string name="parkings_refreshed">The parking types have been refreshed</string>
+    <string name="states_refreshing">The state types are refreshing</string>
+    <string name="states_refreshed">The state types have been refreshed</string>
+    <string name="types_refreshing">The property types are refreshing</string>
+    <string name="types_refreshed">The property types have been refreshed</string>
+
+    <!-- SearchActivity -->
+    <string name="county">County</string>
+    <string name="city">City</string>
+    <string name="offer">Offer type</string>
+    <string name="heating">Heating</string>
+    <string name="parking">Parking</string>
+    <string name="state">State</string>
+    <string name="type">Property type</string>
+    <string name="choose">Choose</string>
+    <string name="price">Price</string>
+    <string name="rent">Rent</string>
+    <string name="search">Search</string>
+    <string name="ok">OK</string>
 
 </resources>

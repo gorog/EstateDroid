@@ -27,6 +27,7 @@ public class ResultActivity extends ParentActivity {
 		fillGrid();
 	}
 	
+	@Override
 	protected void onResume(){
 		super.onResume();
 		fillGrid();

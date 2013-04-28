@@ -35,7 +35,7 @@ import com.j256.ormlite.table.TableUtils;
 public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
 	private static final String DATABASE_NAME = "estateDroid.db";
-	private static final int DATABASE_VERSION = 1;
+	private static final int DATABASE_VERSION = 3;
 
 	// the DAO object we use to access the SimpleData table
 	private Dao<Property, Integer> propertyDao = null;

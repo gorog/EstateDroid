@@ -11,14 +11,14 @@ public class County {
 	@DatabaseField
 	private String name;
 
-	@DatabaseField(foreign=true, foreignAutoCreate=true, foreignAutoRefresh=true)
-	private Country country;
+	@DatabaseField
+	private int country;
 
 	public County() {
 		super();
 	}
 
-	public County(Integer id, String name, Country country) {
+	public County(Integer id, String name, int country) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -41,11 +41,11 @@ public class County {
 		this.name = name;
 	}
 
-	public Country getCountry() {
+	public int getCountry() {
 		return country;
 	}
 
-	public void setCountry(Country country) {
+	public void setCountry(int country) {
 		this.country = country;
 	}
 

@@ -13,7 +13,8 @@
     <string name="action_search">Keresés</string>
     <string name="action_favorites">Kedvencek</string>
     <string name="action_notifications">Jelzések</string>
-    
+    <string name="action_own">Saját profil</string>
+
     <!-- PrefsActivity -->
     <string name="user_password_info_summary">Felhasználónév és jelszó</string>
     <string name="user_password_info_title">Bejelentkezési információ</string>
@@ -22,5 +23,39 @@
     <string name="password_summary">Írd be a jelszavadat</string>
     <string name="password_title">Jelszó</string>
     <string name="settings_title">Beállítások</string>
+
+    <!-- DateRefreshActivity -->
+    <string name="cities_refreshing">A városok frissítése</string>
+    <string name="cities_refreshed">A városok frissítve</string>
+    <string name="countries_refreshing">Az országok frissítése</string>
+    <string name="countries_refreshed">Az országok frissítve</string>
+    <string name="counties_refreshing">A megyék frissítése</string>
+    <string name="counties_refreshed">A megyék frissítve</string>
+    <string name="heatings_refreshing">A fűtések frissítése</string>
+    <string name="heatings_refreshed">A fűtések frissítve</string>
+    <string name="notificationtypes_refreshing">A jelzéstípusok frissítése</string>
+    <string name="notificationtypes_refreshed">A jelzéstípusok frissítve</string>
+    <string name="offers_refreshing">Az ajánlatok frissítése</string>
+    <string name="offers_refreshed">Az ajánlatok frissítve</string>
+    <string name="parkings_refreshing">A parkolási lehetőségek frissítése</string>
+    <string name="parkings_refreshed">A parkolási lehetőségek frissítve</string>
+    <string name="states_refreshing">Az ingatlan állapotok frissítése</string>
+    <string name="states_refreshed">Az ingatlan állapotok frissítve</string>
+    <string name="types_refreshing">Az ingatlan típusok frissítése</string>
+    <string name="types_refreshed">Az ingatlan típusok frissítve</string>
+
+    <!-- SearchActivity -->
+    <string name="county">Megye</string>
+    <string name="city">Város</string>
+    <string name="offer">Ajánlat típusa</string>
+    <string name="heating">Fűtés</string>
+    <string name="parking">Parkolás</string>
+    <string name="state">Állapot</string>
+    <string name="type">Ingatlan típusa</string>
+    <string name="choose">Kiválaszt</string>
+    <string name="price">Ár</string>
+    <string name="rent">Bérleti díj</string>
+    <string name="search">Keresés</string>
+    <string name="ok">OK</string>
 
 </resources>

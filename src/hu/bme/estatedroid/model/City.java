@@ -14,14 +14,14 @@ public class City {
 	@DatabaseField
 	private String zipCode;
 
-	@DatabaseField(foreign=true, foreignAutoCreate=true, foreignAutoRefresh=true)
-	private County county;
+	@DatabaseField
+	private int county;
 
 	public City() {
 		super();
 	}
 
-	public City(Integer id, String name, String zipCode, County county) {
+	public City(Integer id, String name, String zipCode, int county) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -53,11 +53,11 @@ public class City {
 		this.zipCode = zipCode;
 	}
 
-	public County getCounty() {
+	public int getCounty() {
 		return county;
 	}
 
-	public void setCounty(County county) {
+	public void setCounty(int county) {
 		this.county = county;
 	}
 

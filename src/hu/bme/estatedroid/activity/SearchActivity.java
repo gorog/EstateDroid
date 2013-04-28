@@ -2,10 +2,19 @@ package hu.bme.estatedroid.activity;
 
 import hu.bme.estatedroid.ParentActivity;
 import hu.bme.estatedroid.R;
+import hu.bme.estatedroid.model.City;
+import hu.bme.estatedroid.model.County;
+import hu.bme.estatedroid.model.Heating;
+import hu.bme.estatedroid.model.Offer;
+import hu.bme.estatedroid.model.Parking;
 import hu.bme.estatedroid.model.Property;
+import hu.bme.estatedroid.model.State;
+import hu.bme.estatedroid.model.Type;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import org.springframework.http.HttpAuthentication;
 import org.springframework.http.HttpBasicAuthentication;
@@ -19,108 +28,554 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.widget.TextView;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Spinner;
 
 import com.google.gson.Gson;
 import com.j256.ormlite.dao.Dao;
 
 public class SearchActivity extends ParentActivity {
-	String username;
-	String password;
+
+	final Context context = this;
 	AsyncTask<Void, Void, String> progressAsyncTask;
-	TextView responseText;
 	Property[] properties;
+	CharSequence[] offers;
+	CharSequence[] heatings;
+	CharSequence[] parkings;
+	CharSequence[] states;
+	CharSequence[] types;
+
+	AutoCompleteTextView countyTextView;
+	AutoCompleteTextView cityTextView;
+	Button offerChooseButton;
+	Button heatingChooseButton;
+	Button parkingChooseButton;
+	Button stateChooseButton;
+	Button typeChooseButton;
+	Button searchButton;
+	Spinner priceOption;
+	Spinner rentOption;
+	EditText priceEditText;
+	EditText rentEditText;
+
+	String county;
+	String city;
+	int chosenOffer;
+	boolean[] chosenHeatings;
+	boolean[] chosenParkings;
+	boolean[] chosenStates;
+	boolean[] chosenTypes;
+	int priceChosenOption;
+	int rentChosenOption;
+	int price;
+	int rent;
+	Editor editor;
+	SharedPreferences prefs;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_search);
+		// TODO ellenőrizni, hogy az adatok a táblákban rendelkezésre állnak, ha
+		// nem, hívja a DataRefresht
 
-		SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(this);
+		prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		editor = prefs.edit();
 
-		username = prefs.getString("username", "");
-		password = prefs.getString("password", "");
-		responseText = (TextView) findViewById(R.id.test);
+		countyTextView = (AutoCompleteTextView) findViewById(R.id.countyTextView);
+		cityTextView = (AutoCompleteTextView) findViewById(R.id.cityTextView);
+		offerChooseButton = (Button) findViewById(R.id.offerChooseButton);
+		heatingChooseButton = (Button) findViewById(R.id.heatingChooseButton);
+		parkingChooseButton = (Button) findViewById(R.id.parkingChooseButton);
+		stateChooseButton = (Button) findViewById(R.id.stateChooseButton);
+		typeChooseButton = (Button) findViewById(R.id.typeChooseButton);
+		priceOption = (Spinner) findViewById(R.id.priceOption);
+		rentOption = (Spinner) findViewById(R.id.rentOption);
+		priceEditText = (EditText) findViewById(R.id.priceEditText);
+		rentEditText = (EditText) findViewById(R.id.rentEditText);
 
-		progressAsyncTask = new AsyncTask<Void, Void, String>() {
-			@Override
-			protected void onPreExecute() {
-				showLoadingProgressDialog();
+		searchButton = (Button) findViewById(R.id.searchButton);
+
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		Gson gson = new Gson();
+
+		Dao<County, Integer> coutyDao;
+		Dao<City, Integer> cityDao;
+		List<String> countylist = new ArrayList<String>();
+		List<String> citylist = new ArrayList<String>();
+		try {
+			coutyDao = getHelper().getCountyDao();
+			for (County p : coutyDao.queryForAll()) {
+				countylist.add(p.getName());
+			}
+			cityDao = getHelper().getCityDao();
+			for (City p : cityDao.queryBuilder().distinct()
+					.selectColumns("name").query()) {
+				citylist.add(p.getName());
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		ArrayAdapter<String> countyAdapter = new ArrayAdapter<String>(this,
+				android.R.layout.simple_dropdown_item_1line,
+				countylist.toArray(new String[countylist.size()]));
+
+		countyTextView.setAdapter(countyAdapter);
+		ArrayAdapter<String> cityAdapter = new ArrayAdapter<String>(this,
+				android.R.layout.simple_dropdown_item_1line,
+				citylist.toArray(new String[citylist.size()]));
+
+		cityTextView.setAdapter(cityAdapter);
+
+		countyTextView.setText(prefs.getString("county", ""));
+		cityTextView.setText(prefs.getString("city", ""));
+
+		Dao<Offer, Integer> offerDao;
+		List<CharSequence> offerList = new ArrayList<CharSequence>();
+		try {
+			offerDao = getHelper().getOfferDao();
+			for (Offer p : offerDao.queryForAll()) {
+				offerList.add(p.getType());
+			}
+		} catch (SQLException e) {
+			// TODO kezelni
+		}
+		offers = offerList.toArray(new CharSequence[offerList.size()]);
+
+		chosenOffer = prefs.getInt("chosenOffer", 0);
+
+		offerChooseButton.setOnClickListener(new OnClickListener() {
+
+			public void onClick(View v) {
+
+				AlertDialog.Builder builder = new AlertDialog.Builder(context);
+				builder.setTitle(R.string.offer);
+
+				builder.setSingleChoiceItems(offers, chosenOffer,
+						new DialogInterface.OnClickListener() {
+
+							public void onClick(DialogInterface dialog,
+									int which) {
+								chosenOffer = which;
+								dialog.dismiss();
+							}
+						});
+
+				AlertDialog alert = builder.create();
+				alert.show();
+			}
+		});
+
+		Dao<Heating, Integer> heatingDao;
+		List<CharSequence> heatingList = new ArrayList<CharSequence>();
+		try {
+			heatingDao = getHelper().getHeatingDao();
+			for (Heating p : heatingDao.queryForAll()) {
+				heatingList.add(p.getName());
+			}
+		} catch (SQLException e) {
+			// TODO kezelni
+		}
+
+		heatings = heatingList.toArray(new CharSequence[heatingList.size()]);
+
+		chosenHeatings = new boolean[heatingList.size()];
+		for (int i = 0; i < chosenHeatings.length; i++) {
+			chosenHeatings[i] = true;
+		}
+
+		String chosenHeatingsSet = prefs.getString("chosenHeatings",
+				gson.toJson(chosenHeatings));
+
+		chosenHeatings = gson.fromJson(chosenHeatingsSet, boolean[].class);
+
+		if (chosenHeatings.length != heatings.length) {
+			chosenHeatings = new boolean[heatingList.size()];
+			for (int i = 0; i < chosenHeatings.length; i++) {
+				chosenHeatings[i] = true;
+			}
+		}
+
+		heatingChooseButton.setOnClickListener(new OnClickListener() {
+
+			public void onClick(View v) {
+
+				AlertDialog.Builder builder = new AlertDialog.Builder(context);
+				builder.setTitle(R.string.heating);
+
+				builder.setMultiChoiceItems(heatings, chosenHeatings,
+						new DialogInterface.OnMultiChoiceClickListener() {
+
+							public void onClick(DialogInterface dialog,
+									int which, boolean isChecked) {
+								chosenHeatings[which] = isChecked;
+							}
+
+						});
+				builder.setPositiveButton(R.string.ok,
+						new DialogInterface.OnClickListener() {
+
+							public void onClick(DialogInterface dialog,
+									int which) {
+								dialog.dismiss();
+
+							}
+						});
+				AlertDialog alert = builder.create();
+				alert.show();
+			}
+		});
+
+		Dao<Parking, Integer> parkingDao;
+		List<CharSequence> parkingList = new ArrayList<CharSequence>();
+		try {
+			parkingDao = getHelper().getParkingDao();
+			for (Parking p : parkingDao.queryForAll()) {
+				parkingList.add(p.getName());
+			}
+		} catch (SQLException e) {
+			// TODO kezelni
+		}
+		parkings = parkingList.toArray(new CharSequence[parkingList.size()]);
+
+		chosenParkings = new boolean[parkingList.size()];
+		for (int i = 0; i < chosenParkings.length; i++) {
+			chosenParkings[i] = true;
+		}
+
+		String chosenParkingsSet = prefs.getString("chosenParkings",
+				gson.toJson(chosenParkings));
+
+		chosenParkings = gson.fromJson(chosenParkingsSet, boolean[].class);
+
+		if (chosenParkings.length != parkings.length) {
+			chosenParkings = new boolean[parkingList.size()];
+			for (int i = 0; i < chosenHeatings.length; i++) {
+				chosenParkings[i] = true;
+			}
+		}
+
+		parkingChooseButton.setOnClickListener(new OnClickListener() {
+
+			public void onClick(View v) {
+
+				AlertDialog.Builder builder = new AlertDialog.Builder(context);
+				builder.setTitle(R.string.parking);
+
+				builder.setMultiChoiceItems(parkings, chosenParkings,
+						new DialogInterface.OnMultiChoiceClickListener() {
+
+							public void onClick(DialogInterface dialog,
+									int which, boolean isChecked) {
+								chosenParkings[which] = isChecked;
+							}
+
+						});
+				builder.setPositiveButton(R.string.ok,
+						new DialogInterface.OnClickListener() {
+
+							public void onClick(DialogInterface dialog,
+									int which) {
+								dialog.dismiss();
+
+							}
+						});
+				AlertDialog alert = builder.create();
+				alert.show();
+			}
+		});
+
+		Dao<State, Integer> stateDao;
+		List<CharSequence> stateList = new ArrayList<CharSequence>();
+		try {
+			stateDao = getHelper().getStateDao();
+			for (State p : stateDao.queryForAll()) {
+				stateList.add(p.getName());
+			}
+		} catch (SQLException e) {
+			// TODO kezelni
+		}
+		states = stateList.toArray(new CharSequence[stateList.size()]);
+		chosenStates = new boolean[stateList.size()];
+		for (int i = 0; i < chosenStates.length; i++) {
+			chosenStates[i] = true;
+		}
+
+		String chosenStatesSet = prefs.getString("chosenStates",
+				gson.toJson(chosenStates));
+
+		chosenStates = gson.fromJson(chosenStatesSet, boolean[].class);
+
+		if (chosenStates.length != states.length) {
+			chosenStates = new boolean[stateList.size()];
+			for (int i = 0; i < chosenStates.length; i++) {
+				chosenStates[i] = true;
+			}
+		}
+
+		stateChooseButton.setOnClickListener(new OnClickListener() {
+
+			public void onClick(View v) {
+
+				AlertDialog.Builder builder = new AlertDialog.Builder(context);
+				builder.setTitle(R.string.state);
+
+				builder.setMultiChoiceItems(states, chosenStates,
+						new DialogInterface.OnMultiChoiceClickListener() {
+
+							public void onClick(DialogInterface dialog,
+									int which, boolean isChecked) {
+								chosenStates[which] = isChecked;
+							}
+
+						});
+				builder.setPositiveButton(R.string.ok,
+						new DialogInterface.OnClickListener() {
+
+							public void onClick(DialogInterface dialog,
+									int which) {
+								dialog.dismiss();
+
+							}
+						});
+				AlertDialog alert = builder.create();
+				alert.show();
+			}
+		});
+
+		Dao<Type, Integer> typeDao;
+		List<CharSequence> typeList = new ArrayList<CharSequence>();
+		try {
+			typeDao = getHelper().getTypeDao();
+			for (Type p : typeDao.queryForAll()) {
+				typeList.add(p.getName());
+			}
+		} catch (SQLException e) {
+			// TODO kezelni
+		}
+		types = typeList.toArray(new CharSequence[typeList.size()]);
+		chosenTypes = new boolean[typeList.size()];
+		for (int i = 0; i < chosenTypes.length; i++) {
+			chosenTypes[i] = true;
+		}
+
+		String chosenTypesSet = prefs.getString("chosenTypes",
+				gson.toJson(chosenStates));
+
+		chosenTypes = gson.fromJson(chosenTypesSet, boolean[].class);
+
+		if (chosenTypes.length != types.length) {
+			chosenTypes = new boolean[typeList.size()];
+			for (int i = 0; i < chosenTypes.length; i++) {
+				chosenTypes[i] = true;
+			}
+		}
+
+		typeChooseButton.setOnClickListener(new OnClickListener() {
+
+			public void onClick(View v) {
+
+				AlertDialog.Builder builder = new AlertDialog.Builder(context);
+				builder.setTitle(R.string.type);
+
+				builder.setMultiChoiceItems(types, chosenTypes,
+						new DialogInterface.OnMultiChoiceClickListener() {
+
+							public void onClick(DialogInterface dialog,
+									int which, boolean isChecked) {
+								chosenTypes[which] = isChecked;
+							}
+
+						});
+				builder.setPositiveButton(R.string.ok,
+						new DialogInterface.OnClickListener() {
+
+							public void onClick(DialogInterface dialog,
+									int which) {
+								dialog.dismiss();
+
+							}
+						});
+				AlertDialog alert = builder.create();
+				alert.show();
+			}
+		});
+
+		priceOption.setSelection(prefs.getInt("priceChosenOption", 0));
+		rentOption.setSelection(prefs.getInt("rentChosenOption", 0));
+		priceEditText.setText(String.valueOf(prefs.getInt("price", 0)));
+		rentEditText.setText(String.valueOf(prefs.getInt("rent", 0)));
+
+		searchButton.setOnClickListener(new OnClickListener() {
+
+			public void onClick(View v) {
+				progressAsyncTask = new ProgressAsyncTask();
+				progressAsyncTask.execute();
+			}
+		});
+	}
+
+	@Override
+	public void onPause() {
+		super.onPause();
+		Gson gson = new Gson();
+		editor.putInt("chosenOffer", chosenOffer);
+		editor.putString("chosenHeatings", gson.toJson(chosenHeatings));
+		editor.putString("chosenParkings", gson.toJson(chosenParkings));
+		editor.putString("chosenStates", gson.toJson(chosenStates));
+		editor.putString("chosenTypes", gson.toJson(chosenTypes));
+		editor.putString("county", countyTextView.getText().toString());
+		editor.putString("city", cityTextView.getText().toString());
+		editor.putInt("priceChosenOption",
+				(int) priceOption.getSelectedItemId());
+		editor.putInt("rentChosenOption", (int) rentOption.getSelectedItemId());
+		if (!priceEditText.getText().toString().equals("")) {
+			editor.putInt("price",
+					Integer.valueOf(priceEditText.getText().toString()));
+		} else {
+			editor.putInt("price", 0);
+		}
+		if (!rentEditText.getText().toString().equals("")) {
+			editor.putInt("rent",
+					Integer.valueOf(rentEditText.getText().toString()));
+		} else {
+			editor.putInt("rent", 0);
+		}
+		editor.commit();
+	}
+
+	class ProgressAsyncTask extends AsyncTask<Void, Void, String> {
+		@Override
+		protected void onPreExecute() {
+			showLoadingProgressDialog();
+		}
+
+		@Override
+		protected String doInBackground(Void... arg0) {
+			final String url = getString(R.string.base_uri)
+					+ "/v1/properties.json?county={county}&city={city}&offer={offer}&heating={heating}&parking={parking}&state={state}&type={type}&price={price}&rent={rent}";
+
+			HttpAuthentication authHeader = new HttpBasicAuthentication(
+					username, password);
+			HttpHeaders requestHeaders = new HttpHeaders();
+
+			requestHeaders.setAuthorization(authHeader);
+			requestHeaders.setAccept(Collections
+					.singletonList(MediaType.APPLICATION_JSON));
+
+			RestTemplate restTemplate = new RestTemplate();
+			restTemplate.getMessageConverters().add(
+					new StringHttpMessageConverter());
+			String returnValue = "";
+
+			String heating = "";
+			for (int i = 0; i < chosenHeatings.length; i++) {
+				if (chosenHeatings[i] == true) {
+					heating += heatings[i] + ",";
+				}
+			}
+			heating = heating.substring(0, heating.length() - 1);
+
+			String parking = "";
+			for (int i = 0; i < chosenParkings.length; i++) {
+				if (chosenParkings[i] == true) {
+					parking += parkings[i] + ",";
+				}
+			}
+			parking = parking.substring(0, parking.length() - 1);
+
+			String state = "";
+			for (int i = 0; i < chosenStates.length; i++) {
+				if (chosenStates[i] == true) {
+					state += states[i] + ",";
+				}
+			}
+			state = state.substring(0, state.length() - 1);
+
+			String type = "";
+			for (int i = 0; i < chosenTypes.length; i++) {
+				if (chosenTypes[i] == true) {
+					type += types[i] + ",";
+				}
+			}
+			type = type.substring(0, type.length() - 1);
+			String pricetext = "";
+			if (!priceOption.getSelectedItem().equals("N/A")) {
+				pricetext = ((String) priceOption.getSelectedItem()) + ": "
+						+ price;
+			}
+			String renttext = "";
+			if (!rentOption.getSelectedItem().equals("N/A")) {
+				renttext = ((String) rentOption.getSelectedItem()) + ": "
+						+ rent;
 			}
 
-			@Override
-			protected String doInBackground(Void... arg0) {
-				final String url = getString(R.string.base_uri)
-						+ "/v1/properties.json";
+			try {
+				// Make the network request
+				Log.d(TAG, url);
+				ResponseEntity<String> response = restTemplate.exchange(url,
+						HttpMethod.GET, new HttpEntity<Object>(requestHeaders),
+						String.class, countyTextView.getText(),
+						cityTextView.getText(), offers[chosenOffer], heating,
+						parking, state, type, pricetext, renttext);
+				returnValue = response.getBody();
+			} catch (HttpClientErrorException e) {
+				if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
+					// TODO kezelni, ha nem sikerült az authentikáció
 
-				HttpAuthentication authHeader = new HttpBasicAuthentication(
-						username, password);
-				HttpHeaders requestHeaders = new HttpHeaders();
+				}
+				// TODO többi hibaüzenetre is kezelni, pl nem megy a
+				// szolgáltatás
+			}
 
-				requestHeaders.setAuthorization(authHeader);
-				requestHeaders.setAccept(Collections
-						.singletonList(MediaType.APPLICATION_JSON));
+			return returnValue;
+		}
 
-				RestTemplate restTemplate = new RestTemplate();
-				restTemplate.getMessageConverters().add(
-						new StringHttpMessageConverter());
-				String returnValue = "";
+		@Override
+		protected void onPostExecute(String result) {
+			dismissProgressDialog();
+			properties = (new Gson()).fromJson(result, Property[].class);
 
-				try {
-					// Make the network request
-					Log.d(TAG, url);
-					ResponseEntity<String> response = restTemplate.exchange(
-							url, HttpMethod.GET, new HttpEntity<Object>(
-									requestHeaders), String.class);
-					returnValue = response.getBody();
-				} catch (HttpClientErrorException e) {
-					if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
-						// TODO kezelni, ha nem sikerült az authentikáció
+			try {
+				Dao<Property, Integer> propertyDao = getHelper()
+						.getPropertyDao();
 
-					}
-					// TODO többi hibaüzenetre is kezelni, pl nem megy a
-					// szolgáltatás
+				for (Property p : propertyDao.queryForAll()) {
+					propertyDao.delete(p);
 				}
 
-				return returnValue;
-			}
-
-			@Override
-			protected void onPostExecute(String result) {
-				dismissProgressDialog();
-				properties = (new Gson()).fromJson(result, Property[].class);
-
-				try {
-					Dao<Property, Integer> propertyDao = getHelper()
-							.getPropertyDao();
-
-					for (Property p : propertyDao.queryForAll()) {
-						propertyDao.delete(p);
+				if (properties != null) {
+					for (Property p : properties) {
+						propertyDao.create(p);
 					}
-
-					if (properties != null) {
-						for (Property p : properties) {
-							propertyDao.create(p);
-						}
-					}
-				} catch (SQLException e) {
-					// TODO kezelni
 				}
-				responseText.setText(result);
-				Intent intent = new Intent(getBaseContext(),
-						ResultActivity.class);
-				startActivity(intent);
+			} catch (SQLException e) {
+				// TODO kezelni
 			}
-
-		};
-		progressAsyncTask.execute();
+			Intent intent = new Intent(getBaseContext(), ResultActivity.class);
+			startActivity(intent);
+		}
 	}
 
 }
