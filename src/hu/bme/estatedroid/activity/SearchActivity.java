@@ -1,6 +1,5 @@
 package hu.bme.estatedroid.activity;
 
-import hu.bme.estatedroid.ParentActivity;
 import hu.bme.estatedroid.R;
 import hu.bme.estatedroid.model.City;
 import hu.bme.estatedroid.model.County;
@@ -133,8 +132,7 @@ public class SearchActivity extends ParentActivity {
 				citylist.add(p.getName());
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			sqlErrorMessage(e);
 		}
 
 		ArrayAdapter<String> countyAdapter = new ArrayAdapter<String>(this,
@@ -271,7 +269,7 @@ public class SearchActivity extends ParentActivity {
 
 		if (chosenParkings.length != parkings.length) {
 			chosenParkings = new boolean[parkingList.size()];
-			for (int i = 0; i < chosenHeatings.length; i++) {
+			for (int i = 0; i < chosenParkings.length; i++) {
 				chosenParkings[i] = true;
 			}
 		}
@@ -554,7 +552,7 @@ public class SearchActivity extends ParentActivity {
 
 		@Override
 		protected void onPostExecute(String result) {
-			dismissProgressDialog();
+			
 			properties = (new Gson()).fromJson(result, Property[].class);
 
 			try {
@@ -573,6 +571,7 @@ public class SearchActivity extends ParentActivity {
 			} catch (SQLException e) {
 				// TODO kezelni
 			}
+			dismissProgressDialog();
 			Intent intent = new Intent(getBaseContext(), ResultActivity.class);
 			startActivity(intent);
 		}

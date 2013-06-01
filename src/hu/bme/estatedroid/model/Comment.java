@@ -1,7 +1,5 @@
 package hu.bme.estatedroid.model;
 
-import java.sql.Timestamp;
-
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
@@ -11,27 +9,27 @@ public class Comment {
 	@DatabaseField(id = true)
 	private Integer id;
 
-	@DatabaseField(foreign=true, foreignAutoCreate=true, foreignAutoRefresh=true)
-	private User user;
+	@DatabaseField
+	private String user;
 
-	@DatabaseField(foreign=true, foreignAutoCreate=true, foreignAutoRefresh=true)
-	private Property property;
+	@DatabaseField
+	private int property;
 
 	@DatabaseField
 	private String comment;
 
 	@DatabaseField
-	private Timestamp timestamp;
+	private String timestamp;
 
-	@DatabaseField(foreign=true, foreignAutoCreate=true, foreignAutoRefresh=true)
-	private Comment commentId;
+	@DatabaseField
+	private int commentId;
 
 	public Comment() {
 		super();
 	}
 
-	public Comment(Integer id, User user, Property property, String comment,
-			Timestamp timestamp, Comment commentId) {
+	public Comment(Integer id, String user, int property, String comment,
+			String timestamp, int commentId) {
 		super();
 		this.id = id;
 		this.user = user;
@@ -49,19 +47,19 @@ public class Comment {
 		this.id = id;
 	}
 
-	public User getUser() {
+	public String getUser() {
 		return user;
 	}
 
-	public void setUser(User user) {
+	public void setUser(String user) {
 		this.user = user;
 	}
 
-	public Property getProperty() {
+	public int getProperty() {
 		return property;
 	}
 
-	public void setProperty(Property property) {
+	public void setProperty(int property) {
 		this.property = property;
 	}
 
@@ -73,19 +71,19 @@ public class Comment {
 		this.comment = comment;
 	}
 
-	public Timestamp getTimestamp() {
+	public String getTimestamp() {
 		return timestamp;
 	}
 
-	public void setTimestamp(Timestamp timestamp) {
+	public void setTimestamp(String timestamp) {
 		this.timestamp = timestamp;
 	}
 
-	public Comment getCommentId() {
+	public int getCommentId() {
 		return commentId;
 	}
 
-	public void setCommentId(Comment commentId) {
+	public void setCommentId(int commentId) {
 		this.commentId = commentId;
 	}
 

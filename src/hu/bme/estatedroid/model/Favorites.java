@@ -5,20 +5,20 @@ import com.j256.ormlite.table.DatabaseTable;
 
 @DatabaseTable(tableName = "FAVORITES")
 public class Favorites {
-	@DatabaseField
+	@DatabaseField(id = true)
 	private Integer id;
 
-	@DatabaseField(foreign=true, foreignAutoCreate=true, foreignAutoRefresh=true)
-	private User user;
+	@DatabaseField
+	private String user;
 
-	@DatabaseField(foreign=true, foreignAutoCreate=true, foreignAutoRefresh=true)
-	private Property property;
+	@DatabaseField
+	private int property;
 
 	public Favorites() {
 		super();
 	}
 
-	public Favorites(Integer id, User user, Property property) {
+	public Favorites(Integer id, String user, int property) {
 		super();
 		this.id = id;
 		this.user = user;
@@ -33,19 +33,19 @@ public class Favorites {
 		this.id = id;
 	}
 
-	public User getUser() {
+	public String getUser() {
 		return user;
 	}
 
-	public void setUser(User user) {
+	public void setUser(String user) {
 		this.user = user;
 	}
 
-	public Property getProperty() {
+	public int getProperty() {
 		return property;
 	}
 
-	public void setProperty(Property property) {
+	public void setProperty(int property) {
 		this.property = property;
 	}
 

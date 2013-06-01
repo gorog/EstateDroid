@@ -14,6 +14,7 @@
     <string name="action_favorites">Kedvencek</string>
     <string name="action_notifications">Jelzések</string>
     <string name="action_own">Saját profil</string>
+    <string name="action_upload">Új hirdetés</string>
 
     <!-- PrefsActivity -->
     <string name="user_password_info_summary">Felhasználónév és jelszó</string>
@@ -23,6 +24,7 @@
     <string name="password_summary">Írd be a jelszavadat</string>
     <string name="password_title">Jelszó</string>
     <string name="settings_title">Beállítások</string>
+    <string name="refresh_data">Az adatok frissítése</string>
 
     <!-- DateRefreshActivity -->
     <string name="cities_refreshing">A városok frissítése</string>
@@ -53,9 +55,50 @@
     <string name="state">Állapot</string>
     <string name="type">Ingatlan típusa</string>
     <string name="choose">Kiválaszt</string>
-    <string name="price">Ár</string>
-    <string name="rent">Bérleti díj</string>
+    <string name="price">Ár (Ft)</string>
+    <string name="rent">Bérleti díj (Ft)</string>
     <string name="search">Keresés</string>
     <string name="ok">OK</string>
+
+    <!-- NotificationActivity -->
+    <string name="cancel">Mégse</string>
+    <string name="mark_as_read">Olvasottnak jelöl</string>
+    <string name="mark_as_unread">Olvasatlannak jelöl</string>
+    <string name="jump_to_property">Ugrás az ingatlanra</string>
+    <string name="jump_to_user">Ugrás az felhasználóra</string>
+
+    <!-- UploadActivity -->
+    <string name="upload">Feltölt</string>
+    <string name="has_elevator">Van lift</string>
+    <string name="doesnt_have_elevator">Nincs lift</string>
+    <string name="zipcode">Irányítószám</string>
+    <string name="street">Utca</string>
+    <string name="floor">Emelet</string>
+    <string name="room">Szoba</string>
+    <string name="place">Terület</string>
+    <string name="rooms">Szobák</string>
+    <string name="elevator">Lift</string>
+    <string name="comment">Hirdetés szövege</string>
+    <string name="use">Használ</string>
+    <string name="coord">Koord.</string>
+    <string name="no_location">Nem elérhető a helyszolgáltatás</string>
+    <string name="error_in_data">Hiba a bevitt adatokban</string>
+    
+    <!-- FavoriteActivity -->
+    <string name="delete">Törlés</string>
+    <string name="no_favorite">Jelenleg nincs kedvenc lementve</string>
+    
+    <!-- UserActivity -->
+    <string name="name">Név</string>
+    <string name="profession">Foglalkozás</string>
+    <string name="telephone">Telefonszám</string>
+    <string name="email">E-mail</string>
+    <string name="confirm_dial">A hirdető felhívása</string>
+    <string name="dial">Hívás</string>
+
+    <!-- DetailsActivity -->
+    <string name="country">Ország</string>
+    <string name="timestamp">Feladva</string>
+    <string name="parentcomment">válasz erre:</string>
 
 </resources>

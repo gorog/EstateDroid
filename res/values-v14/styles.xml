@@ -3,7 +3,7 @@
     <!--
         Base application theme for API 14+. This theme completely replaces
         AppBaseTheme from BOTH res/values/styles.xml and
-        res/values-v11/styles.xml on API 14+ devices.
+        res/values-v11/styles.xml on API 14+ devices.
     -->
     <style name="AppBaseTheme" parent="android:Theme.Holo.Light.DarkActionBar">
         <item name="actionMenuTextColor">@color/text_color</item>
@@ -12,6 +12,7 @@
         <item name="android:dropDownItemStyle">@style/Widget.DropDownItemLight</item>
         <item name="android:spinnerItemStyle">@style/SpinnerItem</item>
         <item name="android:spinnerDropDownItemStyle">@style/SpinnerDropDownItem</item>
+        <item name="android:progressBarStyle">@style/Widget.ProgressBar</item>
     </style>
 
     <style name="AutoCompleteTextViewLight" parent="@android:style/Widget.AutoCompleteTextView">
@@ -22,9 +23,12 @@
         <item name="android:textColor">@color/text_color_dark</item>
     </style>
     
+    <style name="Widget.ProgressBar" parent="@android:style/Widget.Holo.Light.ProgressBar.Horizontal">
+        <item name="android:textColor">@color/text_color_dark</item>
+    </style>
+
     <style name="SpinnerItem">
         <item name="android:textColor">@color/text_color_dark</item>
-        <item name="android:maxHeight">10dip</item>
     </style>
 
     <style name="SpinnerDropDownItem">

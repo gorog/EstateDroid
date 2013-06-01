@@ -11,5 +11,9 @@
         <item>2 is selected</item>
         <item>3 is selected</item>
     </string-array>
+    <string-array name="elevator">
+        <item>@string/has_elevator</item>
+        <item>@string/doesnt_have_elevator</item>
+    </string-array>
 
 </resources>

@@ -1,7 +1,7 @@
 package hu.bme.estatedroid.helper;
 
 import hu.bme.estatedroid.R;
-import hu.bme.estatedroid.model.Property;
+import hu.bme.estatedroid.activity.FavoriteActivity.FavoriteProperty;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,14 +20,15 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class PropertyAdapter extends BaseAdapter {
+public class FavoritePropertyAdapter extends BaseAdapter {
 	private Context context;
-	private List<Property> propertyValue;
+	private List<FavoriteProperty> propertyValue;
 	String username;
 	String password;
 
-	public PropertyAdapter(Context context, List<Property> propertyValue,
-			String username, String password) {
+	public FavoritePropertyAdapter(Context context,
+			List<FavoriteProperty> propertyValue, String username,
+			String password) {
 		this.context = context;
 		this.propertyValue = propertyValue;
 		this.username = username;
@@ -38,29 +39,38 @@ public class PropertyAdapter extends BaseAdapter {
 		return propertyValue.size();
 	}
 
-	public Property getItem(int position) {
+	public FavoriteProperty getItem(int position) {
 		return propertyValue.get(position);
 	}
 
-	public Property getItemById(int id) {
-		for (Property p : propertyValue) {
-			if (p.getId() == id) {
+	public FavoriteProperty getItemById(int id) {
+		for (FavoriteProperty p : propertyValue) {
+			if (p.getFavoriteId() == id) {
 				return p;
 			}
 		}
 		return null;
 	}
 
-	public long getItemId(int position) {
-		return propertyValue.get(position).getId();
+	public boolean contains(FavoriteProperty favoriteProperty) {
+		return propertyValue.contains(favoriteProperty);
 	}
 
-	public void add(Property property) {
+	public long getItemId(int position) {
+		return propertyValue.get(position).getFavoriteId();
+	}
+
+	public void add(FavoriteProperty property) {
 		propertyValue.add(property);
 	}
 
-	public void remove(Property property) {
+	public void remove(FavoriteProperty property) {
 		propertyValue.remove(property);
+	}
+
+	public void clear() {
+		propertyValue.clear();
+		Log.d("",String.valueOf(propertyValue.size()));
 	}
 
 	public View getView(int position, View convertView, ViewGroup parent) {
@@ -77,35 +87,47 @@ public class PropertyAdapter extends BaseAdapter {
 
 			TextView cityTextView = (TextView) baseView
 					.findViewById(R.id.property_name);
-			if (!propertyValue.get(position).getCity().equals("null")) {
-				cityTextView.setText(propertyValue.get(position).getCity());
+			if (!propertyValue.get(position).getProperty().getCity()
+					.equals("null")) {
+				cityTextView.setText(propertyValue.get(position).getProperty()
+						.getCity());
 			} else {
-				cityTextView.setText(propertyValue.get(position).getLongitude()
-						+ ", " + propertyValue.get(position).getLatitude());
+				cityTextView.setText(propertyValue.get(position).getProperty()
+						.getLongitude()
+						+ ", "
+						+ propertyValue.get(position).getProperty()
+								.getLatitude());
 			}
 			TextView offerTextView = (TextView) baseView
 					.findViewById(R.id.property_offer);
-			offerTextView.setText(propertyValue.get(position).getOffer());
+			offerTextView.setText(propertyValue.get(position).getProperty()
+					.getOffer());
 
 			String price = "";
 
-			if (propertyValue.get(position).getPrice() != null) {
-				price += fmt(propertyValue.get(position).getPrice()) + " Ft";
-				if (propertyValue.get(position).getRent() != null) {
-					price += " / " + fmt(propertyValue.get(position).getRent())
-							+ " Ft";
+			if (propertyValue.get(position).getProperty().getPrice() != null) {
+				price += fmt(propertyValue.get(position).getProperty()
+						.getPrice())
+						+ " Ft";
+				if (propertyValue.get(position).getProperty().getRent() != null) {
+					price += " / "
+							+ fmt(propertyValue.get(position).getProperty()
+									.getRent()) + " Ft";
 				}
-			} else if (propertyValue.get(position).getRent() != null) {
-				price += fmt(propertyValue.get(position).getRent()) + " Ft";
+			} else if (propertyValue.get(position).getProperty().getRent() != null) {
+				price += fmt(propertyValue.get(position).getProperty()
+						.getRent())
+						+ " Ft";
 			}
 			TextView priceTextView = (TextView) baseView
 					.findViewById(R.id.property_price);
 			priceTextView.setText(price);
 			TextView placeTextView = (TextView) baseView
 					.findViewById(R.id.property_place);
-			if (propertyValue.get(position).getPlace() != null) {
+			if (propertyValue.get(position).getProperty().getPlace() != null) {
 				placeTextView.setText(fmt(propertyValue.get(position)
-						.getPlace()) + " m2");
+						.getProperty().getPlace())
+						+ " m2");
 			} else {
 				placeTextView.setText("nincs megadva");
 			}
@@ -113,8 +135,8 @@ public class PropertyAdapter extends BaseAdapter {
 			// TODO képet beállítani
 			ImageView imageView = (ImageView) baseView.findViewById(R.id.icon);
 			PropertyImageThumbLoader pitl = new PropertyImageThumbLoader(
-					context, imageView, propertyValue.get(position).getId(),
-					username, password);
+					context, imageView, propertyValue.get(position)
+							.getProperty().getId(), username, password);
 			imageView = pitl.getImageView();
 
 		} else {

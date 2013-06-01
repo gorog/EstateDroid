@@ -32,10 +32,13 @@
 
     <style name="SpinnerItem">
         <item name="android:textColor">@color/text_color_dark</item>
-        <item name="android:maxHeight">10dip</item>
     </style>
 
     <style name="SpinnerDropDownItem">
+        <item name="android:textColor">@color/text_color_dark</item>
+    </style>
+    
+    <style name="dialog">
         <item name="android:textColor">@color/text_color_dark</item>
     </style>
 

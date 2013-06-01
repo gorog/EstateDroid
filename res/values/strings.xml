@@ -17,6 +17,7 @@
     <string name="action_favorites">Favorites</string>
     <string name="action_notifications">Notifications</string>
     <string name="action_own">Own profile</string>
+    <string name="action_upload">New Advertisement</string>
 
     <!-- PrefsActivity -->
     <string name="user_password_info_summary">Username and password information</string>
@@ -26,6 +27,7 @@
     <string name="password_summary">Enter your password</string>
     <string name="password_title">Password</string>
     <string name="settings_title">Settings</string>
+    <string name="refresh_data">Az adatok frissítése</string>
 
     <!-- DateRefreshActivity -->
     <string name="cities_refreshing">The cities are refreshing</string>
@@ -56,9 +58,51 @@
     <string name="state">State</string>
     <string name="type">Property type</string>
     <string name="choose">Choose</string>
-    <string name="price">Price</string>
-    <string name="rent">Rent</string>
+    <string name="price">Price (HUF)</string>
+    <string name="rent">Rent (HUF)</string>
     <string name="search">Search</string>
     <string name="ok">OK</string>
 
+    <!-- NotificationActivity -->
+    <string name="cancel">Cancel</string>
+    <string name="mark_as_read">Mark as read</string>
+    <string name="mark_as_unread">Mark as unread</string>
+    <string name="jump_to_property">Jump to property</string>
+    <string name="jump_to_user">Jump to user</string>
+
+    <!-- UploadActivity -->
+    <string name="upload">Upload</string>
+    <string name="has_elevator">Has elevator</string>
+    <string name="doesnt_have_elevator">Doesn\'t have elevator</string>
+    <string name="zipcode">Zip Code</string>
+    <string name="street">Street</string>
+    <string name="house_number">House number</string>
+    <string name="floor">Floor</string>
+    <string name="room">Room</string>
+    <string name="place">Place</string>
+    <string name="rooms">Rooms</string>
+    <string name="elevator">Elevator</string>
+    <string name="comment">Description</string>
+    <string name="use">use</string>
+    <string name="coord">Coord.</string>
+    <string name="no_location">Location not available</string>
+    <string name="error_in_data">Error in the given details</string>
+    
+    <!-- FavoriteActivity -->
+    <string name="delete">Delete</string>
+    <string name="no_favorite">There\'s no favorite saved</string>
+    
+    <!-- UserActivity -->
+    <string name="name">Name</string>
+    <string name="profession">Profession</string>
+    <string name="telephone">Telephone</string>
+    <string name="email">E-mail</string>
+    <string name="confirm_dial">Call the advertiser</string>
+    <string name="dial">Dial</string>
+
+    <!-- DetailsActivity -->
+    <string name="country">Country</string>
+    <string name="timestamp">Posted on</string>
+    <string name="parentcomment">Response to:</string>
+    
 </resources>

@@ -1,37 +1,38 @@
 package hu.bme.estatedroid.model;
 
-import java.sql.Timestamp;
-
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 @DatabaseTable(tableName = "NOTIFICATION")
 public class Notification {
-	
+
 	@DatabaseField(id = true)
 	private Integer id;
 
-	@DatabaseField(foreign=true, foreignAutoCreate=true, foreignAutoRefresh=true)
-	private User user;
+	@DatabaseField
+	private String user;
 
-	@DatabaseField(foreign=true, foreignAutoCreate=true, foreignAutoRefresh=true)
-	private Property property;
+	@DatabaseField
+	private int property;
 
-	@DatabaseField(foreign=true, foreignAutoCreate=true, foreignAutoRefresh=true)
-	private NotificationType type;
+	@DatabaseField
+	private int type;
 
 	@DatabaseField
 	private String content;
 
 	@DatabaseField
-	private Timestamp timestamp;
+	private String timestamp;
+
+	@DatabaseField
+	private boolean isread;
 
 	public Notification() {
 		super();
 	}
 
-	public Notification(Integer id, User user, Property property,
-			NotificationType type, String content, Timestamp timestamp) {
+	public Notification(Integer id, String user, int property, int type,
+			String content, String timestamp, boolean isread) {
 		super();
 		this.id = id;
 		this.user = user;
@@ -39,6 +40,7 @@ public class Notification {
 		this.type = type;
 		this.content = content;
 		this.timestamp = timestamp;
+		this.isread = isread;
 	}
 
 	public Integer getId() {
@@ -49,27 +51,27 @@ public class Notification {
 		this.id = id;
 	}
 
-	public User getUser() {
+	public String getUser() {
 		return user;
 	}
 
-	public void setUser(User user) {
+	public void setUser(String user) {
 		this.user = user;
 	}
 
-	public Property getProperty() {
+	public int getProperty() {
 		return property;
 	}
 
-	public void setProperty(Property property) {
+	public void setProperty(int property) {
 		this.property = property;
 	}
 
-	public NotificationType getType() {
+	public int getType() {
 		return type;
 	}
 
-	public void setType(NotificationType type) {
+	public void setType(int type) {
 		this.type = type;
 	}
 
@@ -81,12 +83,20 @@ public class Notification {
 		this.content = content;
 	}
 
-	public Timestamp getTimestamp() {
+	public String getTimestamp() {
 		return timestamp;
 	}
 
-	public void setTimestamp(Timestamp timestamp) {
+	public void setTimestamp(String timestamp) {
 		this.timestamp = timestamp;
+	}
+
+	public boolean isIsread() {
+		return isread;
+	}
+
+	public void setIsread(boolean isread) {
+		this.isread = isread;
 	}
 
 }

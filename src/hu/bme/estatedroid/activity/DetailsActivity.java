@@ -1,177 +1,303 @@
 package hu.bme.estatedroid.activity;
 
 import hu.bme.estatedroid.R;
-import android.content.res.Configuration;
+import hu.bme.estatedroid.helper.CommentAdapter;
+import hu.bme.estatedroid.helper.PropertyImageThumbLoader;
+import hu.bme.estatedroid.model.Comment;
+import hu.bme.estatedroid.model.Property;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.springframework.http.HttpAuthentication;
+import org.springframework.http.HttpBasicAuthentication;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+
+import android.content.Context;
+import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
-import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.google.gson.Gson;
+import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.stmt.PreparedQuery;
+import com.j256.ormlite.stmt.QueryBuilder;
 
-public class DetailsActivity extends SherlockFragmentActivity {
+public class DetailsActivity extends ParentActivity {
+
+	final Context context = this;
+	int propertyId;
+	Property property;
+
+	TextView titleTextView;
+	TextView offerTextView;
+	TextView typeTextView;
+	TextView priceTextView;
+	TextView rentTextView;
+	TextView placeTextView;
+	TextView stateTextView;
+	TextView roomsTextView;
+	TextView heatingTextView;
+	TextView elevatorTextView;
+	TextView parkingTextView;
+	TextView commentTextView;
+	TextView timestampTextView;
+	LinearLayout commentList;
+	static ImageView mainImageView;
+	LinearLayout imageList;
+	static PropertyImageThumbLoader thumbLoader;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.activity_details);
+
+		titleTextView = (TextView) findViewById(R.id.titleTextView);
+		typeTextView = (TextView) findViewById(R.id.typeTextView);
+		priceTextView = (TextView) findViewById(R.id.priceTextView);
+		rentTextView = (TextView) findViewById(R.id.rentTextView);
+		placeTextView = (TextView) findViewById(R.id.placeTextView);
+		stateTextView = (TextView) findViewById(R.id.stateTextView);
+		roomsTextView = (TextView) findViewById(R.id.roomsTextView);
+		heatingTextView = (TextView) findViewById(R.id.heatingTextView);
+		elevatorTextView = (TextView) findViewById(R.id.elevatorTextView);
+		parkingTextView = (TextView) findViewById(R.id.parkingTextView);
+		commentTextView = (TextView) findViewById(R.id.commentTextView);
+		timestampTextView = (TextView) findViewById(R.id.timestampTextView);
+		mainImageView = (ImageView) findViewById(R.id.mainImageView);
+		imageList = (LinearLayout) findViewById(R.id.imageList);
+		commentList = (LinearLayout) findViewById(R.id.commentList);
+
+		Intent intent = getIntent();
+		propertyId = intent.getIntExtra("propertyId", 0);
+
 	}
 
-	public static class InnerDetailsActivity extends SherlockFragmentActivity {
+	@Override
+	protected void onResume() {
+		super.onResume();
+		List<Property> list = new ArrayList<Property>();
+		try {
+			Dao<Property, Integer> dao = getHelper().getPropertyDao();
+			QueryBuilder<Property, Integer> queryBuilder = dao.queryBuilder();
+			queryBuilder.where().eq("id", propertyId);
+			PreparedQuery<Property> preparedQuery = queryBuilder.prepare();
 
-		@Override
-		protected void onCreate(Bundle savedInstanceState) {
-			super.onCreate(savedInstanceState);
+			list = dao.query(preparedQuery);
+		} catch (SQLException e) {
 
-			if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-				// If the screen is now in landscape mode, we can show the
-				// dialog in-line with the list so we don't need this activity.
-				finish();
-				return;
-			}
-
-			if (savedInstanceState == null) {
-				// During initial setup, plug in the details fragment.
-				/*DetailsFragment details = new DetailsFragment();
-				details.setArguments(getIntent().getExtras());
-				getSupportFragmentManager().beginTransaction()
-						.add(android.R.id.content, details).commit();*/
-			}
+		}
+		if (list.size() > 0) {
+			property = list.get(0);
+			fill(property);
+		} else {
+			ProgressAsyncTask progressAsyncTask = new ProgressAsyncTask();
+			progressAsyncTask.execute();
+			CommentAsyncTask commentAsyncTask = new CommentAsyncTask();
+			commentAsyncTask.execute();
 		}
 	}
 
-	/*	public static class TitlesFragment extends SherlockFragment {
-		boolean mDualPane;
-		int mCurCheckPosition = 0;
-
-		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-				Bundle savedInstanceState) {
-			GridView gridView = new GridView(getActivity());
-			
-			return gridView;
+	protected void fill(Property property) {
+		String offer = Character.toUpperCase(property.getOffer().charAt(0))
+				+ property.getOffer().substring(1);
+		String title = offer + ",";
+		if (!property.getCity().equals("")
+				&& !property.getCity().equals("NULL")) {
+			title += " " + property.getCity();
 		}
-
-		@Override
-		public void onActivityCreated(Bundle savedInstanceState) {
-			super.onActivityCreated(savedInstanceState);
-
-			LayoutInflater inflater = (LayoutInflater) getActivity()
-					.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			GridView gridView = new GridView(getActivity());
-
-			// Populate list with our static array of titles.
-			setListAdapter(new ArrayAdapter<String>(getActivity(),
-					R.layout.simple_list_item_checkable_1, android.R.id.text1,
-					Shakespeare.TITLES));
-
-			// Check to see if we have a frame in which to embed the details
-			// fragment directly in the containing UI.
-			View detailsFrame = getActivity().findViewById(R.id.details);
-			mDualPane = detailsFrame != null
-					&& detailsFrame.getVisibility() == View.VISIBLE;
-
-			if (savedInstanceState != null) {
-				// Restore last state for checked position.
-				mCurCheckPosition = savedInstanceState.getInt("curChoice", 0);
-			}
-
-			if (mDualPane) {
-				// In dual-pane mode, the list view highlights the selected
-				// item.
-				getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-				// Make sure our UI is in the correct state.
-				showDetails(mCurCheckPosition);
-			}
+		if (!property.getStreet().equals("")
+				&& !property.getStreet().equals("NULL")) {
+			title += " " + property.getStreet();
 		}
-
-		@Override
-		public void onSaveInstanceState(Bundle outState) {
-			super.onSaveInstanceState(outState);
-			outState.putInt("curChoice", mCurCheckPosition);
+		if (!property.getHouse_number().equals("")
+				&& !property.getHouse_number().equals("NULL")) {
+			title += " " + property.getHouse_number() + ".";
 		}
-
-		@Override
-		public void onListItemClick(ListView l, View v, int position, long id) {
-			showDetails(position);
+		if (!property.getFloor().equals("")
+				&& !property.getFloor().equals("NULL")) {
+			title += " " + property.getFloor();
 		}
-*/
-		/**
-		 * Helper function to show the details of a selected item, either by
-		 * displaying a fragment in-place in the current UI, or starting a whole
-		 * new activity in which it is displayed.
+		if (!property.getRoom().equals("")
+				&& !property.getRoom().equals("NULL")) {
+			title += "/" + property.getRoom();
+		}
+		titleTextView.setText(title);
+
+		commentTextView.setText(property.getComment());
+
+		typeTextView.setText(property.getType());
+		if (property.getPrice() != null) {
+			priceTextView.setText(fmt(property.getPrice()));
+		}
+		if (property.getRent() != null) {
+			rentTextView.setText(fmt(property.getRent()));
+		}
+		if (property.getPlace() != null) {
+			placeTextView.setText(fmt(property.getPlace()));
+		}
+		stateTextView.setText(property.getState());
+		roomsTextView.setText(property.getRooms());
+		heatingTextView.setText(property.getHeating());
+		if (property.isElevator()) {
+			elevatorTextView.setText(R.string.has_elevator);
+		} else {
+			elevatorTextView.setText(R.string.doesnt_have_elevator);
+		}
+		parkingTextView.setText(property.getParking());
+		timestampTextView.setText(property.getTimestamp());
+
+		thumbLoader = new PropertyImageThumbLoader(context, mainImageView,
+				propertyId, username, password, imageList);
+		mainImageView = thumbLoader.getImageView();
+		imageList = thumbLoader.getImageList();
+		/*
+		 * for (int i = 0; i < thumbLoader.getCount(); i++) { ImageView
+		 * mImageView = new ImageView(context); mImageView =
+		 * thumbLoader.getImageView(i); imageList.addView(mImageView); }
 		 */
-/*		void showDetails(int index) {
-			mCurCheckPosition = index;
+	}
 
-			if (mDualPane) {
-				// We can display everything in-place with fragments, so update
-				// the list to highlight the selected item and show the data.
-				getListView().setItemChecked(index, true);
-
-				// Check what fragment is currently shown, replace if needed.
-				DetailsFragment details = (DetailsFragment) getFragmentManager()
-						.findFragmentById(R.id.details);
-				if (details == null || details.getShownIndex() != index) {
-					// Make new fragment to show this selection.
-					details = DetailsFragment.newInstance(index);
-
-					// Execute a transaction, replacing any existing fragment
-					// with this one inside the frame.
-					FragmentTransaction ft = getFragmentManager()
-							.beginTransaction();
-					ft.replace(R.id.details, details);
-					ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-					ft.commit();
-				}
-
-			} else {
-				// Otherwise we need to launch a new activity to display
-				// the dialog fragment with selected text.
-				Intent intent = new Intent();
-				intent.setClass(getActivity(), DetailsActivity.class);
-				intent.putExtra("index", index);
-				startActivity(intent);
-			}
+	protected void fillComments(Comment[] comments) {
+		List<Comment> list = new ArrayList<Comment>();
+		for (Comment c : comments) {
+			list.add(c);
 		}
-	}*/
-
-	/*public static class DetailsFragment extends SherlockFragment {
-		public static DetailsFragment newInstance(int index) {
-			DetailsFragment f = new DetailsFragment();
-
-			// Supply index input as an argument.
-			Bundle args = new Bundle();
-			args.putInt("index", index);
-			f.setArguments(args);
-
-			return f;
+		CommentAdapter commentAdapter = new CommentAdapter(context, list);
+		for (int i = 0; i < commentAdapter.getCount(); i++) {
+			commentList.addView(commentAdapter.getView(i, null, null));
 		}
+	}
 
-		public int getShownIndex() {
-			return getArguments().getInt("index", 0);
+	public static String fmt(float d) {
+		if (d == (int) d)
+			return String.format("%d", (int) d);
+		else
+			return String.format("%s", d);
+	}
+
+	class ProgressAsyncTask extends AsyncTask<Void, Void, String> {
+		@Override
+		protected void onPreExecute() {
+			showLoadingProgressDialog();
 		}
 
 		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-				Bundle savedInstanceState) {
-			if (container == null) {
-				// We have different layouts, and in one of them this
-				// fragment's containing frame doesn't exist. The fragment
-				// may still be created from its saved state, but there is
-				// no reason to try to create its view hierarchy because it
-				// won't be displayed. Note this is not needed -- we could
-				// just run the code below, where we would create and return
-				// the view hierarchy; it would just never be used.
-				return null;
+		protected String doInBackground(Void... arg0) {
+			final String url = getString(R.string.base_uri)
+					+ "/v1/properties/{id}.json";
+
+			HttpAuthentication authHeader = new HttpBasicAuthentication(
+					username, password);
+			HttpHeaders requestHeaders = new HttpHeaders();
+
+			requestHeaders.setAuthorization(authHeader);
+			requestHeaders.setAccept(Collections
+					.singletonList(MediaType.APPLICATION_JSON));
+
+			RestTemplate restTemplate = new RestTemplate();
+			restTemplate.getMessageConverters().add(
+					new StringHttpMessageConverter());
+			String returnValue = "";
+
+			try {
+				// Make the network request
+				Log.d(TAG, url);
+				ResponseEntity<String> response = restTemplate.exchange(url,
+						HttpMethod.GET, new HttpEntity<Object>(requestHeaders),
+						String.class, propertyId);
+				returnValue = response.getBody();
+			} catch (HttpClientErrorException e) {
+				if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
+					// TODO kezelni, ha nem sikerült az authentikáció
+
+				}
+				// TODO többi hibaüzenetre is kezelni, pl nem megy a
+				// szolgáltatás
 			}
 
-			ScrollView scroller = new ScrollView(getActivity());
-			TextView text = new TextView(getActivity());
-			int padding = (int) TypedValue.applyDimension(
-					TypedValue.COMPLEX_UNIT_DIP, 4, getActivity()
-							.getResources().getDisplayMetrics());
-			text.setPadding(padding, padding, padding, padding);
-			scroller.addView(text);
-			text.setText(Shakespeare.DIALOGUE[getShownIndex()]);
-			return scroller;
+			return returnValue;
 		}
-	}*/
+
+		@Override
+		protected void onPostExecute(String result) {
+
+			Property mProperty = (new Gson()).fromJson(result, Property.class);
+			dismissProgressDialog();
+			if (mProperty != null) {
+				fill(mProperty);
+			}
+		}
+	}
+
+	class CommentAsyncTask extends AsyncTask<Void, Void, String> {
+		@Override
+		protected void onPreExecute() {
+			showLoadingProgressDialog();
+		}
+
+		@Override
+		protected String doInBackground(Void... arg0) {
+			final String url = getString(R.string.base_uri)
+					+ "/v1/comments.json?property={id}";
+
+			HttpAuthentication authHeader = new HttpBasicAuthentication(
+					username, password);
+			HttpHeaders requestHeaders = new HttpHeaders();
+
+			requestHeaders.setAuthorization(authHeader);
+			requestHeaders.setAccept(Collections
+					.singletonList(MediaType.APPLICATION_JSON));
+
+			RestTemplate restTemplate = new RestTemplate();
+			restTemplate.getMessageConverters().add(
+					new StringHttpMessageConverter());
+			String returnValue = "";
+
+			try {
+				// Make the network request
+				Log.d(TAG, url);
+				ResponseEntity<String> response = restTemplate.exchange(url,
+						HttpMethod.GET, new HttpEntity<Object>(requestHeaders),
+						String.class, propertyId);
+				returnValue = response.getBody();
+			} catch (HttpClientErrorException e) {
+				if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
+					// TODO kezelni, ha nem sikerült az authentikáció
+
+				}
+				// TODO többi hibaüzenetre is kezelni, pl nem megy a
+				// szolgáltatás
+			}
+
+			return returnValue;
+		}
+
+		@Override
+		protected void onPostExecute(String result) {
+
+			Comment[] comments = (new Gson()).fromJson(result, Comment[].class);
+			dismissProgressDialog();
+			Log.d("ez", result);
+			if (comments != null) {
+				fillComments(comments);
+			}
+		}
+	}
+
 }

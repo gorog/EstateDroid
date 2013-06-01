@@ -5,13 +5,12 @@ import com.j256.ormlite.table.DatabaseTable;
 
 @DatabaseTable(tableName = "USER")
 public class User {
-	
+
 	@DatabaseField(id = true)
 	private Integer id;
 
 	@DatabaseField
 	private String username;
-
 
 	@DatabaseField
 	private String name;
@@ -25,13 +24,12 @@ public class User {
 	@DatabaseField
 	private String email;
 
-	
 	public User() {
 		super();
 	}
 
-	public User(Integer id, String username, String name,
-			String profession, String phone, String email) {
+	public User(Integer id, String username, String name, String profession,
+			String phone, String email) {
 		super();
 		this.id = id;
 		this.username = username;
@@ -56,7 +54,6 @@ public class User {
 	public void setUsername(String username) {
 		this.username = username;
 	}
-
 
 	public String getName() {
 		return name;

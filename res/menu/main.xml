@@ -25,6 +25,12 @@
         android:showAsAction="ifRoom"
         android:title="@string/action_own"/>
     <item
+        android:id="@+id/action_upload"
+        android:icon="@drawable/content_new"
+        android:orderInCategory="100"
+        android:showAsAction="ifRoom"
+        android:title="@string/action_upload"/>
+    <item
         android:id="@+id/action_settings"
         android:icon="@drawable/action_settings"
         android:orderInCategory="100"

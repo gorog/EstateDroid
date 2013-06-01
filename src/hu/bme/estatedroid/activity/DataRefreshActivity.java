@@ -1,6 +1,5 @@
 package hu.bme.estatedroid.activity;
 
-import hu.bme.estatedroid.ParentActivity;
 import hu.bme.estatedroid.R;
 import hu.bme.estatedroid.model.City;
 import hu.bme.estatedroid.model.Country;
