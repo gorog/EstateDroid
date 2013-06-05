@@ -21,10 +21,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.FormHttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import android.app.AlertDialog;
@@ -124,12 +127,14 @@ public class UploadActivity extends ParentActivity implements LocationListener {
 	LocationManager locationManager;
 	private String provider;
 
+	public UploadActivity() {
+		super("UploadActivity");
+	}
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_upload);
-		// TODO ellenőrizni, hogy az adatok a táblákban rendelkezésre állnak, ha
-		// nem, hívja a DataRefresht
 
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		editor = prefs.edit();
@@ -325,7 +330,7 @@ public class UploadActivity extends ParentActivity implements LocationListener {
 				offerList.add(p);
 			}
 		} catch (SQLException e) {
-			// TODO kezelni
+			sqlErrorMessage(e);
 		}
 		offers = offerListString.toArray(new CharSequence[offerListString
 				.size()]);
@@ -364,7 +369,7 @@ public class UploadActivity extends ParentActivity implements LocationListener {
 				heatingList.add(p);
 			}
 		} catch (SQLException e) {
-			// TODO kezelni
+			sqlErrorMessage(e);
 		}
 
 		heatings = heatingListString.toArray(new CharSequence[heatingListString
@@ -404,7 +409,7 @@ public class UploadActivity extends ParentActivity implements LocationListener {
 				parkingList.add(p);
 			}
 		} catch (SQLException e) {
-			// TODO kezelni
+			sqlErrorMessage(e);
 		}
 		parkings = parkingListString.toArray(new CharSequence[parkingListString
 				.size()]);
@@ -443,7 +448,7 @@ public class UploadActivity extends ParentActivity implements LocationListener {
 				stateList.add(p);
 			}
 		} catch (SQLException e) {
-			// TODO kezelni
+			sqlErrorMessage(e);
 		}
 		states = stateListString.toArray(new CharSequence[stateListString
 				.size()]);
@@ -481,7 +486,7 @@ public class UploadActivity extends ParentActivity implements LocationListener {
 				typeList.add(p);
 			}
 		} catch (SQLException e) {
-			// TODO kezelni
+			sqlErrorMessage(e);
 		}
 		types = typeListString.toArray(new CharSequence[typeListString.size()]);
 		chosenType = prefs.getInt("u_chosenType", 0);
@@ -641,6 +646,8 @@ public class UploadActivity extends ParentActivity implements LocationListener {
 	}
 
 	class ProgressAsyncTask extends AsyncTask<Void, Void, String> {
+		String returnValue;
+
 		@Override
 		protected void onPreExecute() {
 			showLoadingProgressDialog();
@@ -656,17 +663,16 @@ public class UploadActivity extends ParentActivity implements LocationListener {
 			HttpHeaders requestHeaders = new HttpHeaders();
 
 			requestHeaders.setAuthorization(authHeader);
-			/*
-			 * requestHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED
-			 * ); requestHeaders.setAccept(Collections
-			 * .singletonList(MediaType.APPLICATION_JSON));
-			 */
 
-			RestTemplate restTemplate = new RestTemplate();
+			HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+			requestFactory.setConnectTimeout(1000);
+			RestTemplate restTemplate = new RestTemplate(requestFactory);
 			restTemplate.getMessageConverters().add(
 					new FormHttpMessageConverter());
+			restTemplate.getMessageConverters().add(
+					new StringHttpMessageConverter());
 
-			String returnValue = "";
+			returnValue = "no_data";
 
 			String countyId = "";
 			for (County c : countyList) {
@@ -770,8 +776,10 @@ public class UploadActivity extends ParentActivity implements LocationListener {
 			map.add("price", priceEditText.getText().toString());
 			map.add("rent", rentEditText.getText().toString());
 			map.add("rooms", roomsEditText.getText().toString());
-			map.add("longitude", String.valueOf((int) (lng * 1000000)));
-			map.add("latitude", String.valueOf((int) (lat * 1000000)));
+			if (usePositionCheckBox.isChecked()) {
+				map.add("longitude", String.valueOf((int) (lng * 1000000)));
+				map.add("latitude", String.valueOf((int) (lat * 1000000)));
+			}
 			map.add("elevator", String.valueOf(elevator));
 			map.add("comment", commentEditText.getText().toString());
 
@@ -779,22 +787,27 @@ public class UploadActivity extends ParentActivity implements LocationListener {
 					map, requestHeaders);
 
 			try {
-				// Make the network request
-				Log.d(TAG, url);
 				ResponseEntity<String> response = restTemplate.exchange(url,
 						HttpMethod.POST, request, String.class);
 				returnValue = response.getBody();
-				Log.d(TAG, returnValue);
+				Log.d("wtf", returnValue);
 			} catch (HttpClientErrorException e) {
 				if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
-					// TODO kezelni, ha nem sikerült az authentikáció
-
+					Intent intent = new Intent(getBaseContext(),
+							PrefsActivity.class);
+					startActivity(intent);
+					return "errorindata";
 				}
-				// TODO többi hibaüzenetre is kezelni, pl nem megy a
-				// szolgáltatás
+			} catch (RestClientException e) {
+				Log.d("wtf", e.getMessage());
+				return "errorindata";
+			}
+			if (!returnValue.equals("no_data")) {
+				return returnValue;
+			} else {
+				return "errorindata";
 			}
 
-			return returnValue;
 		}
 
 		@Override
@@ -806,9 +819,12 @@ public class UploadActivity extends ParentActivity implements LocationListener {
 				return;
 			}
 
-			// Todo ugorjon a hirdetés oldalára
-			Intent intent = new Intent(getBaseContext(), ResultActivity.class);
-			startActivity(intent);
+			if (returnValue != "\"error\"") {
+				Intent intent = new Intent(getBaseContext(),
+						DetailsActivity.class);
+				intent.putExtra("propertyId", Integer.parseInt(returnValue));
+				startActivity(intent);
+			}
 		}
 	}
 

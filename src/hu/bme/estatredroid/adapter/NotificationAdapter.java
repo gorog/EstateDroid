@@ -1,4 +1,4 @@
-package hu.bme.estatedroid.helper;
+package hu.bme.estatredroid.adapter;
 
 import hu.bme.estatedroid.R;
 import hu.bme.estatedroid.model.Notification;
@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
+
 //TODO átírni Listesre
 public class NotificationAdapter extends BaseAdapter {
 	private Context context;

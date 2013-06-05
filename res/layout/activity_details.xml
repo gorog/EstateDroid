@@ -60,6 +60,36 @@
             android:textIsSelectable="true"
             android:textSize="18sp" />
 
+        <Button
+            android:id="@+id/addFavoriteButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/addfavorite"
+            android:textSize="18sp" />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:layout_width="170dp"
+                android:layout_height="wrap_content"
+                android:paddingLeft="10dip"
+                android:paddingRight="10dp"
+                android:text="@string/user_name"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/usernameTextView"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:textIsSelectable="true"
+                android:textSize="18sp" />
+        </LinearLayout>
+
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"

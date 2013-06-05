@@ -35,9 +35,8 @@ import com.j256.ormlite.table.TableUtils;
 public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
 	private static final String DATABASE_NAME = "estateDroid.db";
-	private static final int DATABASE_VERSION = 8;
+	private static final int DATABASE_VERSION = 9;
 
-	// the DAO object we use to access the SimpleData table
 	private Dao<Property, Integer> propertyDao = null;
 	private Dao<City, Integer> cityDao = null;
 	private Dao<Comment, Integer> commentDao = null;
@@ -59,9 +58,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	}
 
 	/**
-	 * This is called when the database is first created. Usually you should
-	 * call createTable statements here to create the tables that will store
-	 * your data.
+	 * This is called when the database is first created.
 	 */
 	@Override
 	public void onCreate(SQLiteDatabase db, ConnectionSource connectionSource) {

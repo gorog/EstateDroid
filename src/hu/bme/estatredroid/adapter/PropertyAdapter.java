@@ -1,6 +1,7 @@
-package hu.bme.estatedroid.helper;
+package hu.bme.estatredroid.adapter;
 
 import hu.bme.estatedroid.R;
+import hu.bme.estatedroid.helper.PropertyImageThumbLoader;
 import hu.bme.estatedroid.model.Property;
 
 import java.io.IOException;

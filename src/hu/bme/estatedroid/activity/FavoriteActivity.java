@@ -1,9 +1,10 @@
 package hu.bme.estatedroid.activity;
 
 import hu.bme.estatedroid.R;
-import hu.bme.estatedroid.helper.FavoritePropertyAdapter;
+import hu.bme.estatedroid.model.FavoriteProperty;
 import hu.bme.estatedroid.model.Favorites;
 import hu.bme.estatedroid.model.Property;
+import hu.bme.estatredroid.adapter.FavoritePropertyAdapter;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -16,11 +17,13 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import android.app.AlertDialog;
@@ -47,6 +50,10 @@ public class FavoriteActivity extends ParentListActivity {
 	ArrayAdapter<String> options;
 	ListView listView;
 	Property dummyProperty;
+
+	public FavoriteActivity() {
+		super("FavoriteActivity");
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -84,8 +91,7 @@ public class FavoriteActivity extends ParentListActivity {
 				propertyDao.delete(p);
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			sqlErrorMessage(e);
 		}
 
 		favoritePropertyAdapter = new FavoritePropertyAdapter(this,
@@ -121,24 +127,6 @@ public class FavoriteActivity extends ParentListActivity {
 			PropertyAsyncTask task = new PropertyAsyncTask(f.getProperty(),
 					f.getId());
 			task.execute();
-		}
-	}
-
-	public class FavoriteProperty {
-		Property property;
-		int favoriteId;
-
-		public FavoriteProperty(Property property, int favoriteId) {
-			this.property = property;
-			this.favoriteId = favoriteId;
-		}
-
-		public Property getProperty() {
-			return property;
-		}
-
-		public int getFavoriteId() {
-			return favoriteId;
 		}
 	}
 
@@ -205,10 +193,13 @@ public class FavoriteActivity extends ParentListActivity {
 			requestHeaders.setAccept(Collections
 					.singletonList(MediaType.APPLICATION_JSON));
 
-			RestTemplate restTemplate = new RestTemplate();
+			HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+			requestFactory.setConnectTimeout(1000);
+			RestTemplate restTemplate = new RestTemplate(requestFactory);
+
 			restTemplate.getMessageConverters().add(
 					new StringHttpMessageConverter());
-			String returnValue = "";
+			String returnValue = "no_data";
 			String url = getString(R.string.base_uri) + "/v1/favorites.json";
 
 			try {
@@ -237,21 +228,34 @@ public class FavoriteActivity extends ParentListActivity {
 
 			} catch (HttpClientErrorException e) {
 				if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
-					// TODO kezelni, ha nem sikerült az authentikáció
-
+					Intent intent = new Intent(getBaseContext(),
+							PrefsActivity.class);
+					startActivity(intent);
+					sqlException = new SQLException(
+							context.getString(R.string.bad_username));
+					return 1;
 				}
-				// TODO többi hibaüzenetre is kezelni, pl nem megy a
-				// szolgáltatás
+			} catch (RestClientException e) {
+				sqlException = new SQLException(
+						context.getString(R.string.connection_problem));
+				return 1;
 			}
-			return 0;
+			if (!returnValue.equals("no_data")) {
+				return 0;
+			} else {
+				sqlException = new SQLException(
+						context.getString(R.string.connection_problem));
+				return 1;
+			}
 		}
 
 		@Override
 		protected void onPostExecute(Integer result) {
 			if (result > 0) {
 				sqlErrorMessage(sqlException);
+			} else {
+				fill();
 			}
-			fill();
 			dismissProgressDialog();
 		}
 	}
@@ -259,6 +263,7 @@ public class FavoriteActivity extends ParentListActivity {
 	class FavoriteDeleteAsyncTask extends AsyncTask<Void, Integer, Integer> {
 
 		int id;
+		SQLException sqlException;
 
 		FavoriteDeleteAsyncTask(int id) {
 			this.id = id;
@@ -276,14 +281,16 @@ public class FavoriteActivity extends ParentListActivity {
 
 			requestHeaders.setAuthorization(authHeader);
 
-			RestTemplate restTemplate = new RestTemplate();
+			HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+			requestFactory.setConnectTimeout(1000);
+			RestTemplate restTemplate = new RestTemplate(requestFactory);
 
 			restTemplate.getMessageConverters().add(
 					new StringHttpMessageConverter());
 			restTemplate.getMessageConverters().add(
 					new FormHttpMessageConverter());
 
-			String returnValue = "";
+			String returnValue = "no_data";
 			String url = getString(R.string.base_uri)
 					+ "/v1/favorites/{id}.json";
 
@@ -299,19 +306,31 @@ public class FavoriteActivity extends ParentListActivity {
 
 			} catch (HttpClientErrorException e) {
 				if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
-					// TODO kezelni, ha nem sikerült az authentikáció
-
+					Intent intent = new Intent(getBaseContext(),
+							PrefsActivity.class);
+					startActivity(intent);
+					sqlException = new SQLException(
+							context.getString(R.string.bad_username));
+					return 1;
 				}
+			} catch (RestClientException e) {
+				sqlException = new SQLException(
+						context.getString(R.string.connection_problem));
 				return 1;
-				// TODO többi hibaüzenetre is kezelni, pl nem megy a
-				// szolgáltatás
+			}
+			if (!returnValue.equals("no_data")) {
+				return 0;
+			} else {
+				sqlException = new SQLException(
+						context.getString(R.string.connection_problem));
+				return 1;
 			}
 		}
 
 		@Override
 		protected void onPostExecute(Integer result) {
 			if (result > 0) {
-
+				sqlErrorMessage(sqlException);
 			} else {
 				removeFavoriteProperty(favoritePropertyAdapter.getItemById(id));
 			}
@@ -319,9 +338,11 @@ public class FavoriteActivity extends ParentListActivity {
 		}
 	}
 
-	class PropertyAsyncTask extends AsyncTask<Void, Integer, Property> {
+	class PropertyAsyncTask extends AsyncTask<Void, Integer, Integer> {
 		int propertyId;
 		int favoriteId;
+		Property property;
+		SQLException sqlException;
 
 		PropertyAsyncTask(int propertyId, int favoriteId) {
 			this.propertyId = propertyId;
@@ -334,7 +355,7 @@ public class FavoriteActivity extends ParentListActivity {
 		}
 
 		@Override
-		protected Property doInBackground(Void... urls) {
+		protected Integer doInBackground(Void... urls) {
 
 			HttpHeaders requestHeaders = new HttpHeaders();
 
@@ -342,13 +363,15 @@ public class FavoriteActivity extends ParentListActivity {
 			requestHeaders.setAccept(Collections
 					.singletonList(MediaType.APPLICATION_JSON));
 
-			RestTemplate restTemplate = new RestTemplate();
+			HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+			requestFactory.setConnectTimeout(1000);
+			RestTemplate restTemplate = new RestTemplate(requestFactory);
 			restTemplate.getMessageConverters().add(
 					new StringHttpMessageConverter());
-			String returnValue = "";
+			String returnValue = "no_data";
 			String url = getString(R.string.base_uri)
 					+ "/v1/properties/{id}.json";
-			Property property = null;
+			property = null;
 			try {
 				ResponseEntity<String> response = restTemplate.exchange(url,
 						HttpMethod.GET, new HttpEntity<Object>(requestHeaders),
@@ -367,18 +390,36 @@ public class FavoriteActivity extends ParentListActivity {
 
 			} catch (HttpClientErrorException e) {
 				if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
-					// TODO kezelni, ha nem sikerült az authentikáció
-
+					Intent intent = new Intent(getBaseContext(),
+							PrefsActivity.class);
+					startActivity(intent);
+					sqlException = new SQLException(
+							context.getString(R.string.bad_username));
+					return 1;
 				}
-				// TODO többi hibaüzenetre is kezelni, pl nem megy a
-				// szolgáltatás
+			} catch (RestClientException e) {
+				sqlException = new SQLException(
+						context.getString(R.string.connection_problem));
+				return 1;
 			}
-			return property;
+			if (!returnValue.equals("no_data")) {
+				return 0;
+			} else {
+				sqlException = new SQLException(
+						context.getString(R.string.connection_problem));
+				return 1;
+			}
 		}
 
 		@Override
-		protected void onPostExecute(Property result) {
-			addFavoriteProperty(result, favoriteId);
+		protected void onPostExecute(Integer result) {
+			if (result > 0) {
+				sqlErrorMessage(sqlException);
+			} else {
+				if (property != null) {
+					addFavoriteProperty(property, favoriteId);
+				}
+			}
 			dismissProgressDialog();
 		}
 	}

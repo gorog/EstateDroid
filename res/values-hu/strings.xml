@@ -7,12 +7,15 @@
     <string name="password">Jelszó</string>
     <string name="login">Bejelentkezés</string>
     <string name="loading_please_wait">Betöltés. Kérem várjon&#8230;</string>
+    <string name="bad_username">A belépési adatok nem megfelelőek!</string>
+    <string name="no_default_data">Hiányos adatok</string>
+    <string name="connection_problem">Nem sikerült csatlakozni a szerverhez</string>
 
     <!-- Menu -->
     <string name="action_settings">Beállítások</string>
     <string name="action_search">Keresés</string>
     <string name="action_favorites">Kedvencek</string>
-    <string name="action_notifications">Jelzések</string>
+    <string name="action_notifications">Értesítések</string>
     <string name="action_own">Saját profil</string>
     <string name="action_upload">Új hirdetés</string>
 
@@ -26,7 +29,7 @@
     <string name="settings_title">Beállítások</string>
     <string name="refresh_data">Az adatok frissítése</string>
 
-    <!-- DateRefreshActivity -->
+    <!-- DataRefreshActivity -->
     <string name="cities_refreshing">A városok frissítése</string>
     <string name="cities_refreshed">A városok frissítve</string>
     <string name="countries_refreshing">Az országok frissítése</string>
@@ -83,11 +86,11 @@
     <string name="coord">Koord.</string>
     <string name="no_location">Nem elérhető a helyszolgáltatás</string>
     <string name="error_in_data">Hiba a bevitt adatokban</string>
-    
+
     <!-- FavoriteActivity -->
     <string name="delete">Törlés</string>
     <string name="no_favorite">Jelenleg nincs kedvenc lementve</string>
-    
+
     <!-- UserActivity -->
     <string name="name">Név</string>
     <string name="profession">Foglalkozás</string>
@@ -100,5 +103,6 @@
     <string name="country">Ország</string>
     <string name="timestamp">Feladva</string>
     <string name="parentcomment">válasz erre:</string>
+    <string name="addfavorite">Hozzáadás a kedvencekhez</string>
 
 </resources>

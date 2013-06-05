@@ -1,7 +1,8 @@
-package hu.bme.estatedroid.helper;
+package hu.bme.estatredroid.adapter;
 
 import hu.bme.estatedroid.R;
-import hu.bme.estatedroid.activity.FavoriteActivity.FavoriteProperty;
+import hu.bme.estatedroid.helper.PropertyImageThumbLoader;
+import hu.bme.estatedroid.model.FavoriteProperty;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -70,7 +71,7 @@ public class FavoritePropertyAdapter extends BaseAdapter {
 
 	public void clear() {
 		propertyValue.clear();
-		Log.d("",String.valueOf(propertyValue.size()));
+		Log.d("", String.valueOf(propertyValue.size()));
 	}
 
 	public View getView(int position, View convertView, ViewGroup parent) {

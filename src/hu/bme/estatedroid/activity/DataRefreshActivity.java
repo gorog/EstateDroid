@@ -20,13 +20,16 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
@@ -34,14 +37,20 @@ import com.j256.ormlite.dao.Dao;
 
 public class DataRefreshActivity extends ParentActivity {
 
+	public DataRefreshActivity() {
+		super("DataRefreshActivity");
+	}
+
+	final Context context = this;
 	protected static final String TAG = DataRefreshActivity.class
 			.getSimpleName();
+	private int finishedTasks;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_datarefresh);
-
+		finishedTasks = 0;
 	}
 
 	@Override
@@ -58,74 +67,76 @@ public class DataRefreshActivity extends ParentActivity {
 		TextView statesRefreshText = (TextView) findViewById(R.id.states_refresh);
 		TextView typesRefreshText = (TextView) findViewById(R.id.types_refresh);
 
-		String cities = getString(R.string.base_uri) + "/v1/cities.json";
-		String countries = getString(R.string.base_uri) + "/v1/countries.json";
-		String counties = getString(R.string.base_uri) + "/v1/counties.json";
-		String heatings = getString(R.string.base_uri) + "/v1/heatings.json";
-		String notificationtypes = getString(R.string.base_uri)
+		String citiesURL = getString(R.string.base_uri) + "/v1/cities.json";
+		String countriesURL = getString(R.string.base_uri) + "/v1/countries.json";
+		String countiesURL = getString(R.string.base_uri) + "/v1/counties.json";
+		String heatingsURL = getString(R.string.base_uri) + "/v1/heatings.json";
+		String notificationtypesURL = getString(R.string.base_uri)
 				+ "/v1/notificationtypes.json";
-		String offers = getString(R.string.base_uri) + "/v1/offers.json";
-		String parkings = getString(R.string.base_uri) + "/v1/parkings.json";
-		String states = getString(R.string.base_uri) + "/v1/states.json";
-		String types = getString(R.string.base_uri) + "/v1/types.json";
+		String offersURL = getString(R.string.base_uri) + "/v1/offers.json";
+		String parkingsURL = getString(R.string.base_uri) + "/v1/parkings.json";
+		String statesURL = getString(R.string.base_uri) + "/v1/states.json";
+		String typesURL = getString(R.string.base_uri) + "/v1/types.json";
 
 		ProgressAsyncTask citiesTask = new ProgressAsyncTask(citiesRefreshText,
 				getText(R.string.cities_refreshing).toString(), getText(
 						R.string.cities_refreshed).toString(),
 				City.class.toString());
-		citiesTask.execute(cities);
+		citiesTask.execute(citiesURL);
 
 		ProgressAsyncTask countriesTask = new ProgressAsyncTask(
 				countiesRefreshText, getText(R.string.countries_refreshing)
 						.toString(), getText(R.string.countries_refreshed)
 						.toString(), Country.class.toString());
-		countriesTask.execute(countries);
+		countriesTask.execute(countriesURL);
 
 		ProgressAsyncTask countiesTask = new ProgressAsyncTask(
 				countriesRefreshText, getText(R.string.counties_refreshing)
 						.toString(), getText(R.string.counties_refreshed)
 						.toString(), County.class.toString());
-		countiesTask.execute(counties);
+		countiesTask.execute(countiesURL);
 
 		ProgressAsyncTask heatingsTask = new ProgressAsyncTask(
 				heatingsRefreshText, getText(R.string.heatings_refreshing)
 						.toString(), getText(R.string.heatings_refreshed)
 						.toString(), Heating.class.toString());
-		heatingsTask.execute(heatings);
+		heatingsTask.execute(heatingsURL);
 
 		ProgressAsyncTask notificationtypesTask = new ProgressAsyncTask(
 				notificationTypesRefreshText, getText(
 						R.string.notificationtypes_refreshing).toString(),
 				getText(R.string.notificationtypes_refreshed).toString(),
 				NotificationType.class.toString());
-		notificationtypesTask.execute(notificationtypes);
+		notificationtypesTask.execute(notificationtypesURL);
 
 		ProgressAsyncTask offersTask = new ProgressAsyncTask(offersRefreshText,
 				getText(R.string.offers_refreshing).toString(), getText(
 						R.string.offers_refreshed).toString(),
 				Offer.class.toString());
-		offersTask.execute(offers);
+		offersTask.execute(offersURL);
 
 		ProgressAsyncTask parkingsTask = new ProgressAsyncTask(
 				parkingsRefreshText, getText(R.string.parkings_refreshing)
 						.toString(), getText(R.string.parkings_refreshed)
 						.toString(), Parking.class.toString());
-		parkingsTask.execute(parkings);
+		parkingsTask.execute(parkingsURL);
 
 		ProgressAsyncTask statesTask = new ProgressAsyncTask(statesRefreshText,
 				getText(R.string.states_refreshing).toString(), getText(
 						R.string.states_refreshed).toString(),
 				State.class.toString());
-		statesTask.execute(states);
+		statesTask.execute(statesURL);
 
 		ProgressAsyncTask typesTask = new ProgressAsyncTask(typesRefreshText,
 				getText(R.string.types_refreshing).toString(), getText(
 						R.string.types_refreshed).toString(),
 				Type.class.toString());
-		typesTask.execute(types);
+		typesTask.execute(typesURL);
 	}
 
-	class ProgressAsyncTask extends AsyncTask<String, Integer, String> {
+	class ProgressAsyncTask extends AsyncTask<String, Integer, Integer> {
+
+		SQLException sqlException;
 
 		TextView textView;
 		String pendingMessage;
@@ -148,7 +159,7 @@ public class DataRefreshActivity extends ParentActivity {
 		}
 
 		@Override
-		protected String doInBackground(String... urls) {
+		protected Integer doInBackground(String... urls) {
 
 			HttpHeaders requestHeaders = new HttpHeaders();
 
@@ -156,15 +167,15 @@ public class DataRefreshActivity extends ParentActivity {
 			requestHeaders.setAccept(Collections
 					.singletonList(MediaType.APPLICATION_JSON));
 
-			RestTemplate restTemplate = new RestTemplate();
+			HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+			requestFactory.setConnectTimeout(10000);
+			RestTemplate restTemplate = new RestTemplate(requestFactory);
+
 			restTemplate.getMessageConverters().add(
 					new StringHttpMessageConverter());
-			String returnValue = "";
+			String returnValue = "no_data";
 
 			try {
-				// Make the network request
-				Log.d(TAG, urls[0]);
-
 				ResponseEntity<String> response = restTemplate.exchange(
 						urls[0], HttpMethod.GET, new HttpEntity<Object>(
 								requestHeaders), String.class);
@@ -191,21 +202,38 @@ public class DataRefreshActivity extends ParentActivity {
 
 			} catch (HttpClientErrorException e) {
 				if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
-					// TODO kezelni, ha nem sikerült az authentikáció
-
+					Intent intent = new Intent(getBaseContext(),
+							PrefsActivity.class);
+					startActivity(intent);
+					sqlException = new SQLException(
+							context.getString(R.string.bad_username));
+					return 1;
 				}
-				// TODO többi hibaüzenetre is kezelni, pl nem megy a
-				// szolgáltatás
+			} catch (RestClientException e) {
+				sqlException = new SQLException(
+						context.getString(R.string.connection_problem));
+				return 1;
 			}
-
-			return "ok";
+			if (!returnValue.equals("no_data")) {
+				return 0;
+			} else {
+				sqlException = new SQLException(
+						context.getString(R.string.connection_problem));
+				return 1;
+			}
 		}
 
 		@Override
-		protected void onPostExecute(String result) {
-
-			textView.setText(responseMessage);
-			// TODO vmi lezárás, bezárás
+		protected void onPostExecute(Integer result) {
+			if (result > 0) {
+				sqlErrorMessage(sqlException);
+			} else {
+				textView.setText(responseMessage);
+				finishedTasks++;
+			}
+			if (finishedTasks == 9) {
+				finish();
+			}
 		}
 
 		@Override
@@ -233,7 +261,7 @@ public class DataRefreshActivity extends ParentActivity {
 					}
 				}
 			} catch (SQLException e) {
-				sqlErrorMessage();
+				sqlErrorMessage(e);
 			}
 		}
 
@@ -256,7 +284,7 @@ public class DataRefreshActivity extends ParentActivity {
 					}
 				}
 			} catch (SQLException e) {
-				sqlErrorMessage();
+				sqlErrorMessage(e);
 			}
 		}
 
@@ -279,7 +307,7 @@ public class DataRefreshActivity extends ParentActivity {
 					}
 				}
 			} catch (SQLException e) {
-				sqlErrorMessage();
+				sqlErrorMessage(e);
 			}
 		}
 
@@ -302,7 +330,7 @@ public class DataRefreshActivity extends ParentActivity {
 					}
 				}
 			} catch (SQLException e) {
-				sqlErrorMessage();
+				sqlErrorMessage(e);
 			}
 		}
 
@@ -327,7 +355,7 @@ public class DataRefreshActivity extends ParentActivity {
 					}
 				}
 			} catch (SQLException e) {
-				sqlErrorMessage();
+				sqlErrorMessage(e);
 			}
 		}
 
@@ -350,7 +378,7 @@ public class DataRefreshActivity extends ParentActivity {
 					}
 				}
 			} catch (SQLException e) {
-				sqlErrorMessage();
+				sqlErrorMessage(e);
 			}
 		}
 
@@ -373,7 +401,7 @@ public class DataRefreshActivity extends ParentActivity {
 					}
 				}
 			} catch (SQLException e) {
-				sqlErrorMessage();
+				sqlErrorMessage(e);
 			}
 		}
 
@@ -396,7 +424,7 @@ public class DataRefreshActivity extends ParentActivity {
 					}
 				}
 			} catch (SQLException e) {
-				sqlErrorMessage();
+				sqlErrorMessage(e);
 			}
 		}
 
@@ -419,12 +447,8 @@ public class DataRefreshActivity extends ParentActivity {
 					}
 				}
 			} catch (SQLException e) {
-				sqlErrorMessage();
+				sqlErrorMessage(e);
 			}
-		}
-
-		private void sqlErrorMessage() {
-
 		}
 	}
 }

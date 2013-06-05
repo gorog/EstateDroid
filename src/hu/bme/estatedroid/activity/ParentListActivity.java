@@ -2,7 +2,20 @@ package hu.bme.estatedroid.activity;
 
 import hu.bme.estatedroid.R;
 import hu.bme.estatedroid.helper.DatabaseHelper;
+import hu.bme.estatedroid.model.City;
+import hu.bme.estatedroid.model.Comment;
+import hu.bme.estatedroid.model.Country;
+import hu.bme.estatedroid.model.County;
+import hu.bme.estatedroid.model.Favorites;
+import hu.bme.estatedroid.model.Heating;
 import hu.bme.estatedroid.model.Notification;
+import hu.bme.estatedroid.model.NotificationType;
+import hu.bme.estatedroid.model.Offer;
+import hu.bme.estatedroid.model.Parking;
+import hu.bme.estatedroid.model.Property;
+import hu.bme.estatedroid.model.State;
+import hu.bme.estatedroid.model.Type;
+import hu.bme.estatedroid.model.User;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -35,6 +48,11 @@ public class ParentListActivity extends SherlockListActivity {
 	private ProgressDialog progressDialog;
 	protected HttpAuthentication authHeader;
 	protected Menu menu;
+	private final String className;
+
+	protected ParentListActivity(String className) {
+		this.className = className;
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -45,10 +63,27 @@ public class ParentListActivity extends SherlockListActivity {
 		username = prefs.getString("username", "");
 		password = prefs.getString("password", "");
 		authHeader = new HttpBasicAuthentication(username, password);
+
+		if (username.equals("")) {
+			Toast.makeText(getApplicationContext(), R.string.bad_username,
+					Toast.LENGTH_LONG).show();
+			Intent intent = new Intent(getBaseContext(), PrefsActivity.class);
+			startActivity(intent);
+		}
+		if (!checkDatabase()) {
+			Intent intent = new Intent(getBaseContext(),
+					DataRefreshActivity.class);
+			startActivity(intent);
+		}
 	}
 
 	protected void onResume() {
 		super.onResume();
+		SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(this);
+		username = prefs.getString("username", "");
+		password = prefs.getString("password", "");
+		authHeader = new HttpBasicAuthentication(username, password);
 	}
 
 	@Override
@@ -155,5 +190,87 @@ public class ParentListActivity extends SherlockListActivity {
 	public void sqlErrorMessage(SQLException e) {
 		Toast.makeText(getApplicationContext(), e.getMessage(),
 				Toast.LENGTH_SHORT).show();
+	}
+
+	public boolean checkDatabase() {
+		boolean returnValue = true;
+		try {
+			Dao<Property, Integer> propertyDao = getHelper().getPropertyDao();
+			if (!propertyDao.isTableExists()) {
+				returnValue = false;
+			}
+
+			Dao<Comment, Integer> commentDao = getHelper().getCommentDao();
+			if (!commentDao.isTableExists()) {
+				returnValue = false;
+			}
+
+			Dao<Favorites, Integer> favoritesDao = getHelper()
+					.getFavoritesDao();
+			if (!favoritesDao.isTableExists()) {
+				returnValue = false;
+			}
+
+			Dao<User, Integer> userDao = getHelper().getUserDao();
+			if (!userDao.isTableExists()) {
+				returnValue = false;
+			}
+
+			Dao<Notification, Integer> notificationDao = getHelper()
+					.getNotificationDao();
+			if (!notificationDao.isTableExists()) {
+				returnValue = false;
+			}
+
+			Dao<City, Integer> cityDao = getHelper().getCityDao();
+			if (cityDao.countOf() == 0) {
+				returnValue = false;
+			}
+
+			Dao<Country, Integer> countryDao = getHelper().getCountryDao();
+			if (countryDao.countOf() == 0) {
+				returnValue = false;
+			}
+
+			Dao<County, Integer> countyDao = getHelper().getCountyDao();
+			if (countyDao.countOf() == 0) {
+				returnValue = false;
+			}
+
+			Dao<Heating, Integer> heatingDao = getHelper().getHeatingDao();
+			if (heatingDao.countOf() == 0) {
+				returnValue = false;
+			}
+
+			Dao<NotificationType, Integer> notificationTypeDao = getHelper()
+					.getNotificationTypeDao();
+			if (notificationTypeDao.countOf() == 0) {
+				returnValue = false;
+			}
+
+			Dao<Offer, Integer> offerDao = getHelper().getOfferDao();
+			if (offerDao.countOf() == 0) {
+				returnValue = false;
+			}
+
+			Dao<Parking, Integer> parkingDao = getHelper().getParkingDao();
+			if (parkingDao.countOf() == 0) {
+				returnValue = false;
+			}
+
+			Dao<State, Integer> stateDao = getHelper().getStateDao();
+			if (stateDao.countOf() == 0) {
+				returnValue = false;
+			}
+
+			Dao<Type, Integer> typeDao = getHelper().getTypeDao();
+			if (typeDao.countOf() == 0) {
+				returnValue = false;
+			}
+
+		} catch (SQLException e) {
+			returnValue = false;
+		}
+		return returnValue;
 	}
 }

@@ -1,8 +1,8 @@
 package hu.bme.estatedroid.activity;
 
 import hu.bme.estatedroid.R;
-import hu.bme.estatedroid.helper.PropertyAdapter;
 import hu.bme.estatedroid.model.Property;
+import hu.bme.estatredroid.adapter.PropertyAdapter;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -21,12 +21,17 @@ import android.widget.GridView;
 
 import com.j256.ormlite.dao.Dao;
 
+//TODO ha nincs egy elem se, akkor csináljon vmit
 public class ResultActivity extends ParentActivity {
 
 	final Context context = this;
 	GridView gridView;
 	ArrayAdapter<String> options;
 	PropertyAdapter propertyAdapter;
+
+	public ResultActivity() {
+		super("ResultActivity");
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

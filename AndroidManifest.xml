@@ -33,7 +33,10 @@
         </activity>
         <activity android:name="hu.bme.estatedroid.activity.ResultActivity" >
         </activity>
-        <activity android:name="hu.bme.estatedroid.activity.DataRefreshActivity" >
+        <activity
+            android:name="hu.bme.estatedroid.activity.DataRefreshActivity"
+            android:configChanges="orientation|keyboardHidden"
+            android:screenOrientation="portrait" >
         </activity>
         <activity android:name="hu.bme.estatedroid.activity.NotificationActivity" >
         </activity>

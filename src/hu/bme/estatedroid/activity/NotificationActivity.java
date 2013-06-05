@@ -1,9 +1,9 @@
 package hu.bme.estatedroid.activity;
 
 import hu.bme.estatedroid.R;
-import hu.bme.estatedroid.helper.NotificationAdapter;
 import hu.bme.estatedroid.model.Notification;
 import hu.bme.estatedroid.model.NotificationType;
+import hu.bme.estatredroid.adapter.NotificationAdapter;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -25,6 +25,7 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import android.app.AlertDialog;
@@ -52,6 +53,10 @@ public class NotificationActivity extends ParentListActivity {
 	NotificationAsyncTask progressAsyncTask;
 	ArrayAdapter<String> options;
 	ListView listView;
+
+	public NotificationActivity() {
+		super("NotificationActivity");
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -109,7 +114,6 @@ public class NotificationActivity extends ParentListActivity {
 				options.add(context.getString(R.string.mark_as_read));
 				options.add(context.getString(R.string.mark_as_unread));
 				options.add(context.getString(R.string.jump_to_property));
-				options.add(context.getString(R.string.jump_to_user));
 				options.add(context.getString(R.string.cancel));
 
 				builder.setAdapter(options, new NotificationOnClickListener(
@@ -148,9 +152,6 @@ public class NotificationActivity extends ParentListActivity {
 						notificationAdapter.getItemById((int) id).getProperty());
 				startActivity(intent);
 			} else if (options.getItem(which).equals(
-					context.getString(R.string.jump_to_user))) {
-				// TODO
-			} else if (options.getItem(which).equals(
 					context.getString(R.string.cancel))) {
 				dialog.dismiss();
 			}
@@ -184,7 +185,9 @@ public class NotificationActivity extends ParentListActivity {
 		refreshNotification(menu);
 	}
 
-	class NotificationAsyncTask extends AsyncTask<Void, Integer, Void> {
+	class NotificationAsyncTask extends AsyncTask<Void, Integer, Integer> {
+
+		SQLException sqlException;
 
 		@Override
 		protected void onPreExecute() {
@@ -192,7 +195,7 @@ public class NotificationActivity extends ParentListActivity {
 		}
 
 		@Override
-		protected Void doInBackground(Void... urls) {
+		protected Integer doInBackground(Void... urls) {
 
 			HttpHeaders requestHeaders = new HttpHeaders();
 
@@ -203,7 +206,7 @@ public class NotificationActivity extends ParentListActivity {
 			RestTemplate restTemplate = new RestTemplate();
 			restTemplate.getMessageConverters().add(
 					new StringHttpMessageConverter());
-			String returnValue = "";
+			String returnValue = "no_data";
 			String url = getString(R.string.base_uri)
 					+ "/v1/notifications.json";
 
@@ -233,27 +236,45 @@ public class NotificationActivity extends ParentListActivity {
 
 			} catch (HttpClientErrorException e) {
 				if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
-					// TODO kezelni, ha nem sikerült az authentikáció
-
+					Intent intent = new Intent(getBaseContext(),
+							PrefsActivity.class);
+					startActivity(intent);
+					sqlException = new SQLException(
+							context.getString(R.string.bad_username));
+					return 1;
 				}
-				// TODO többi hibaüzenetre is kezelni, pl nem megy a
-				// szolgáltatás
+			} catch (RestClientException e) {
+				sqlException = new SQLException(
+						context.getString(R.string.connection_problem));
+				return 1;
 			}
-			return null;
+			if (!returnValue.equals("no_data")) {
+				return 0;
+			} else {
+				sqlException = new SQLException(
+						context.getString(R.string.connection_problem));
+				return 1;
+			}
 		}
 
 		@Override
-		protected void onPostExecute(Void result) {
-			fill();
+		protected void onPostExecute(Integer result) {
+			if (result > 0) {
+				sqlErrorMessage(sqlException);
+			} else {
+				fill();
+			}
 			dismissProgressDialog();
 		}
 
 	}
 
-	class NotificationUpdateAsyncTask extends AsyncTask<Void, Integer, String> {
+	class NotificationUpdateAsyncTask extends AsyncTask<Void, Integer, Integer> {
 
+		SQLException sqlException;
 		long id;
 		boolean isread;
+		String returnValue;
 
 		public NotificationUpdateAsyncTask(long id, boolean isread) {
 			this.id = id;
@@ -266,7 +287,7 @@ public class NotificationActivity extends ParentListActivity {
 		}
 
 		@Override
-		protected String doInBackground(Void... urls) {
+		protected Integer doInBackground(Void... urls) {
 			String url = getString(R.string.base_uri)
 					+ "/v1/notifications/{id}.json";
 
@@ -287,7 +308,7 @@ public class NotificationActivity extends ParentListActivity {
 
 			HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(
 					map, requestHeaders);
-			String returnValue = "";
+			returnValue = "no_data";
 			try {
 				ResponseEntity<String> response = restTemplate.exchange(url,
 						HttpMethod.POST, request, String.class, id);
@@ -295,22 +316,33 @@ public class NotificationActivity extends ParentListActivity {
 
 			} catch (HttpClientErrorException e) {
 				if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
-					// TODO kezelni, ha nem sikerült az authentikáció
-
+					Intent intent = new Intent(getBaseContext(),
+							PrefsActivity.class);
+					startActivity(intent);
+					sqlException = new SQLException(
+							context.getString(R.string.bad_username));
+					return 1;
 				}
-				// TODO többi hibaüzenetre is kezelni, pl nem megy a
-				// szolgáltatás
+			} catch (RestClientException e) {
+				sqlException = new SQLException(
+						context.getString(R.string.connection_problem));
+				return 1;
 			}
-			return returnValue;
+			if (!returnValue.equals("no_data")) {
+				return 0;
+			} else {
+				sqlException = new SQLException(
+						context.getString(R.string.connection_problem));
+				return 1;
+			}
 		}
 
 		@Override
-		protected void onPostExecute(String result) {
-			if (result.equals("\"ok\"")) {
+		protected void onPostExecute(Integer result) {
+			if (returnValue.equals("\"ok\"")) {
 				changeIsunread(id);
 			}
 			dismissProgressDialog();
 		}
-
 	}
 }

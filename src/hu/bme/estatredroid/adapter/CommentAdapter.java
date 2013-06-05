@@ -1,4 +1,4 @@
-package hu.bme.estatedroid.helper;
+package hu.bme.estatredroid.adapter;
 
 import hu.bme.estatedroid.R;
 import hu.bme.estatedroid.model.Comment;
@@ -6,6 +6,7 @@ import hu.bme.estatedroid.model.Comment;
 import java.util.List;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -73,6 +74,7 @@ public class CommentAdapter extends BaseAdapter {
 			timestampTextView.setText(""
 					+ commentValue.get(position).getTimestamp());
 
+			Log.d(commentValue.get(position).getComment(),String.valueOf((commentValue.get(position).getCommentId())));
 			if (commentValue.get(position).getCommentId() != 0) {
 				TextView parentTextView = (TextView) baseView
 						.findViewById(R.id.parentTextView);

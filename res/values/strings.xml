@@ -10,6 +10,9 @@
     <string name="login">Login</string>
     <string name="logoDescription">EstateDroid logo</string>
     <string name="loading_please_wait">Loading. Please wait&#8230;</string>
+    <string name="bad_username">The authentication data is not correct!</string>
+    <string name="no_default_data">Missing data</string>
+    <string name="connection_problem">Can\'t connect to server</string>
 
     <!-- Menu -->
     <string name="action_settings">Settings</string>
@@ -27,9 +30,9 @@
     <string name="password_summary">Enter your password</string>
     <string name="password_title">Password</string>
     <string name="settings_title">Settings</string>
-    <string name="refresh_data">Az adatok frissítése</string>
+    <string name="refresh_data">Refresh data</string>
 
-    <!-- DateRefreshActivity -->
+    <!-- DataRefreshActivity -->
     <string name="cities_refreshing">The cities are refreshing</string>
     <string name="cities_refreshed">The cities have been refreshed</string>
     <string name="countries_refreshing">The countries are refreshing</string>
@@ -87,11 +90,11 @@
     <string name="coord">Coord.</string>
     <string name="no_location">Location not available</string>
     <string name="error_in_data">Error in the given details</string>
-    
+
     <!-- FavoriteActivity -->
     <string name="delete">Delete</string>
     <string name="no_favorite">There\'s no favorite saved</string>
-    
+
     <!-- UserActivity -->
     <string name="name">Name</string>
     <string name="profession">Profession</string>
@@ -104,5 +107,6 @@
     <string name="country">Country</string>
     <string name="timestamp">Posted on</string>
     <string name="parentcomment">Response to:</string>
-    
+    <string name="addfavorite">Add to favorites</string>
+
 </resources>

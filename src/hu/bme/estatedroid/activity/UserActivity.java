@@ -14,8 +14,10 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import android.content.Context;
@@ -39,6 +41,10 @@ public class UserActivity extends ParentActivity {
 	TextView emailTextView;
 	UserAsyncTask userAsyncTask;
 	User user;
+
+	public UserActivity() {
+		super("UserActivity");
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -97,10 +103,12 @@ public class UserActivity extends ParentActivity {
 			requestHeaders.setAccept(Collections
 					.singletonList(MediaType.APPLICATION_JSON));
 
-			RestTemplate restTemplate = new RestTemplate();
+			HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+			requestFactory.setConnectTimeout(1000);
+			RestTemplate restTemplate = new RestTemplate(requestFactory);
 			restTemplate.getMessageConverters().add(
 					new StringHttpMessageConverter());
-			String returnValue = "";
+			String returnValue = "no_data";
 			String url = getString(R.string.base_uri)
 					+ "/v1/users/{username}.json";
 
@@ -127,21 +135,34 @@ public class UserActivity extends ParentActivity {
 
 			} catch (HttpClientErrorException e) {
 				if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
-					// TODO kezelni, ha nem sikerült az authentikáció
-
+					Intent intent = new Intent(getBaseContext(),
+							PrefsActivity.class);
+					startActivity(intent);
+					sqlException = new SQLException(
+							context.getString(R.string.bad_username));
+					return 1;
 				}
-				// TODO többi hibaüzenetre is kezelni, pl nem megy a
-				// szolgáltatás
+			} catch (RestClientException e) {
+				sqlException = new SQLException(
+						context.getString(R.string.connection_problem));
+				return 1;
 			}
-			return 0;
+			if (!returnValue.equals("no_data")) {
+				return 0;
+			} else {
+				sqlException = new SQLException(
+						context.getString(R.string.connection_problem));
+				return 1;
+			}
 		}
 
 		@Override
 		protected void onPostExecute(Integer result) {
 			if (result > 0) {
 				sqlErrorMessage(sqlException);
+			} else {
+				fill();
 			}
-			fill();
 			dismissProgressDialog();
 		}
 	}

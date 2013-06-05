@@ -23,8 +23,10 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import android.app.AlertDialog;
@@ -36,7 +38,6 @@ import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
@@ -51,7 +52,7 @@ import com.j256.ormlite.dao.Dao;
 public class SearchActivity extends ParentActivity {
 
 	final Context context = this;
-	AsyncTask<Void, Void, String> progressAsyncTask;
+	AsyncTask<Void, Void, Integer> progressAsyncTask;
 	Property[] properties;
 	CharSequence[] offers;
 	CharSequence[] heatings;
@@ -81,17 +82,17 @@ public class SearchActivity extends ParentActivity {
 	boolean[] chosenTypes;
 	int priceChosenOption;
 	int rentChosenOption;
-	int price;
-	int rent;
 	Editor editor;
 	SharedPreferences prefs;
+
+	public SearchActivity() {
+		super("SearchActivity");
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_search);
-		// TODO ellenőrizni, hogy az adatok a táblákban rendelkezésre állnak, ha
-		// nem, hívja a DataRefresht
 
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		editor = prefs.edit();
@@ -157,7 +158,7 @@ public class SearchActivity extends ParentActivity {
 				offerList.add(p.getType());
 			}
 		} catch (SQLException e) {
-			// TODO kezelni
+			sqlErrorMessage(e);
 		}
 		offers = offerList.toArray(new CharSequence[offerList.size()]);
 
@@ -193,7 +194,7 @@ public class SearchActivity extends ParentActivity {
 				heatingList.add(p.getName());
 			}
 		} catch (SQLException e) {
-			// TODO kezelni
+			sqlErrorMessage(e);
 		}
 
 		heatings = heatingList.toArray(new CharSequence[heatingList.size()]);
@@ -253,7 +254,7 @@ public class SearchActivity extends ParentActivity {
 				parkingList.add(p.getName());
 			}
 		} catch (SQLException e) {
-			// TODO kezelni
+			sqlErrorMessage(e);
 		}
 		parkings = parkingList.toArray(new CharSequence[parkingList.size()]);
 
@@ -312,7 +313,7 @@ public class SearchActivity extends ParentActivity {
 				stateList.add(p.getName());
 			}
 		} catch (SQLException e) {
-			// TODO kezelni
+			sqlErrorMessage(e);
 		}
 		states = stateList.toArray(new CharSequence[stateList.size()]);
 		chosenStates = new boolean[stateList.size()];
@@ -370,7 +371,7 @@ public class SearchActivity extends ParentActivity {
 				typeList.add(p.getName());
 			}
 		} catch (SQLException e) {
-			// TODO kezelni
+			sqlErrorMessage(e);
 		}
 		types = typeList.toArray(new CharSequence[typeList.size()]);
 		chosenTypes = new boolean[typeList.size()];
@@ -463,14 +464,18 @@ public class SearchActivity extends ParentActivity {
 		editor.commit();
 	}
 
-	class ProgressAsyncTask extends AsyncTask<Void, Void, String> {
+	class ProgressAsyncTask extends AsyncTask<Void, Void, Integer> {
+
+		SQLException sqlException;
+		String returnValue;
+
 		@Override
 		protected void onPreExecute() {
 			showLoadingProgressDialog();
 		}
 
 		@Override
-		protected String doInBackground(Void... arg0) {
+		protected Integer doInBackground(Void... arg0) {
 			final String url = getString(R.string.base_uri)
 					+ "/v1/properties.json?county={county}&city={city}&offer={offer}&heating={heating}&parking={parking}&state={state}&type={type}&price={price}&rent={rent}";
 
@@ -482,10 +487,13 @@ public class SearchActivity extends ParentActivity {
 			requestHeaders.setAccept(Collections
 					.singletonList(MediaType.APPLICATION_JSON));
 
-			RestTemplate restTemplate = new RestTemplate();
+			HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+			requestFactory.setConnectTimeout(1000);
+			RestTemplate restTemplate = new RestTemplate(requestFactory);
+
 			restTemplate.getMessageConverters().add(
 					new StringHttpMessageConverter());
-			String returnValue = "";
+			returnValue = "no_data";
 
 			String heating = "";
 			for (int i = 0; i < chosenHeatings.length; i++) {
@@ -521,55 +529,69 @@ public class SearchActivity extends ParentActivity {
 			String pricetext = "";
 			if (!priceOption.getSelectedItem().equals("N/A")) {
 				pricetext = ((String) priceOption.getSelectedItem()) + ": "
-						+ price;
+						+ Integer.valueOf(priceEditText.getText().toString());
 			}
 			String renttext = "";
 			if (!rentOption.getSelectedItem().equals("N/A")) {
 				renttext = ((String) rentOption.getSelectedItem()) + ": "
-						+ rent;
+						+ Integer.valueOf(rentEditText.getText().toString());
 			}
 
 			try {
-				// Make the network request
-				Log.d(TAG, url);
 				ResponseEntity<String> response = restTemplate.exchange(url,
 						HttpMethod.GET, new HttpEntity<Object>(requestHeaders),
 						String.class, countyTextView.getText(),
 						cityTextView.getText(), offers[chosenOffer], heating,
 						parking, state, type, pricetext, renttext);
 				returnValue = response.getBody();
+
 			} catch (HttpClientErrorException e) {
 				if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
-					// TODO kezelni, ha nem sikerült az authentikáció
-
+					Intent intent = new Intent(getBaseContext(),
+							PrefsActivity.class);
+					startActivity(intent);
+					sqlException = new SQLException(
+							context.getString(R.string.bad_username));
+					return 1;
 				}
-				// TODO többi hibaüzenetre is kezelni, pl nem megy a
-				// szolgáltatás
+			} catch (RestClientException e) {
+				sqlException = new SQLException(
+						context.getString(R.string.connection_problem));
+				return 1;
 			}
-
-			return returnValue;
+			if (!returnValue.equals("no_data")) {
+				return 0;
+			} else {
+				sqlException = new SQLException(
+						context.getString(R.string.connection_problem));
+				return 1;
+			}
 		}
 
 		@Override
-		protected void onPostExecute(String result) {
-			
-			properties = (new Gson()).fromJson(result, Property[].class);
+		protected void onPostExecute(Integer result) {
+			if (result > 0) {
+				sqlErrorMessage(sqlException);
+			} else {
+				properties = (new Gson()).fromJson(returnValue,
+						Property[].class);
 
-			try {
-				Dao<Property, Integer> propertyDao = getHelper()
-						.getPropertyDao();
+				try {
+					Dao<Property, Integer> propertyDao = getHelper()
+							.getPropertyDao();
 
-				for (Property p : propertyDao.queryForAll()) {
-					propertyDao.delete(p);
-				}
-
-				if (properties != null) {
-					for (Property p : properties) {
-						propertyDao.create(p);
+					for (Property p : propertyDao.queryForAll()) {
+						propertyDao.delete(p);
 					}
+
+					if (properties != null) {
+						for (Property p : properties) {
+							propertyDao.create(p);
+						}
+					}
+				} catch (SQLException e) {
+					sqlErrorMessage(e);
 				}
-			} catch (SQLException e) {
-				// TODO kezelni
 			}
 			dismissProgressDialog();
 			Intent intent = new Intent(getBaseContext(), ResultActivity.class);

@@ -1,6 +1,7 @@
 package hu.bme.estatedroid.helper;
 
 import hu.bme.estatedroid.R;
+import hu.bme.estatedroid.activity.PrefsActivity;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,11 +17,14 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -29,7 +33,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 
 import com.google.gson.Gson;
 
@@ -90,7 +93,9 @@ public class PropertyImageThumbLoader {
 			requestHeaders.setAccept(Collections
 					.singletonList(MediaType.APPLICATION_JSON));
 
-			RestTemplate restTemplate = new RestTemplate();
+			HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+			requestFactory.setConnectTimeout(1000);
+			RestTemplate restTemplate = new RestTemplate(requestFactory);
 			restTemplate.getMessageConverters().add(
 					new StringHttpMessageConverter());
 
@@ -98,8 +103,6 @@ public class PropertyImageThumbLoader {
 			Bitmap bimage = null;
 
 			try {
-				// Make the network request
-
 				ResponseEntity<String> response = restTemplate.exchange(url,
 						HttpMethod.GET, new HttpEntity<Object>(requestHeaders),
 						String.class, propertyId);
@@ -116,11 +119,12 @@ public class PropertyImageThumbLoader {
 
 			} catch (HttpClientErrorException e) {
 				if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
-					// TODO kezelni, ha nem sikerült az authentikáció
-
+					Intent intent = new Intent(context, PrefsActivity.class);
+					context.startActivity(intent);
+					return null;
 				}
-				// TODO többi hibaüzenetre is kezelni, pl nem megy a
-				// szolgáltatás
+			} catch (RestClientException e) {
+				return null;
 			}
 
 			return bimage;
@@ -128,30 +132,33 @@ public class PropertyImageThumbLoader {
 
 		@Override
 		protected void onPostExecute(Bitmap result) {
-			imageView.setImageBitmap(result);
+			if (result == null) {
+				imageView.setImageResource(R.drawable.ic_launcher);
+			} else {
+				imageView.setImageBitmap(result);
 
-			if (linearLayout != null) {
-				for (int i = 0; i < getCount(); i++) {
-					ImageView mImageView = new ImageView(context);
-					linearLayout.addView(mImageView);
-					// mImageView.setImageBitmap(getBitmapFromURL(context.getString(R.string.base_uri)
-					// + pictures[i],100));
-					getImageView(i, mImageView, 100);
-					LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-							LinearLayout.LayoutParams.WRAP_CONTENT,
-							LinearLayout.LayoutParams.WRAP_CONTENT);
+				if (linearLayout != null) {
+					for (int i = 0; i < getCount(); i++) {
+						ImageView mImageView = new ImageView(context);
+						linearLayout.addView(mImageView);
+						getImageView(i, mImageView, 100);
+						LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+								LinearLayout.LayoutParams.WRAP_CONTENT,
+								LinearLayout.LayoutParams.WRAP_CONTENT);
 
-					params.setMargins(2, 0, 2, 0);
-					mImageView.setLayoutParams(params);
-					mImageView.setTag(i);
-					mImageView.setClickable(true);
-					mImageView.setOnClickListener(new OnClickListener() {
-						public void onClick(View v) {
-							getImageView((Integer) v.getTag(), imageView, 250);
+						params.setMargins(2, 0, 2, 0);
+						mImageView.setLayoutParams(params);
+						mImageView.setTag(i);
+						mImageView.setClickable(true);
+						mImageView.setOnClickListener(new OnClickListener() {
+							public void onClick(View v) {
+								getImageView((Integer) v.getTag(), imageView,
+										250);
 
-						}
-					});
+							}
+						});
 
+					}
 				}
 			}
 		}
@@ -183,7 +190,11 @@ public class PropertyImageThumbLoader {
 
 		@Override
 		protected void onPostExecute(Bitmap result) {
-			image.setImageBitmap(result);
+			if (result == null) {
+				image.setImageResource(R.drawable.ic_launcher);
+			} else {
+				image.setImageBitmap(result);
+			}
 		}
 	}
 
@@ -255,13 +266,6 @@ public class PropertyImageThumbLoader {
 	public LinearLayout getImageList() {
 		return linearLayout;
 	}
-
-	/*
-	 * public ImageView getImageView(int id) {
-	 * imageView.setImageBitmap(getBitmapFromURL(
-	 * context.getString(R.string.base_uri) + pictures[id], 250)); return
-	 * imageView; }
-	 */
 
 	public void getImageView(int id, ImageView image, int size) {
 		NewImageAsyncTask newImageAsyncTask = new NewImageAsyncTask(id, image,

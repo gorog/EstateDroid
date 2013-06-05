@@ -12,10 +12,14 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
@@ -23,7 +27,13 @@ import com.google.gson.Gson;
 import com.j256.ormlite.dao.Dao;
 
 public class MainActivity extends ParentActivity {
+
+	final Context context = this;
 	NotificationAsyncTask progressAsyncTask;
+
+	public MainActivity() {
+		super("MainActivity");
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +43,9 @@ public class MainActivity extends ParentActivity {
 		progressAsyncTask.execute();
 	}
 
-	class NotificationAsyncTask extends AsyncTask<Void, Integer, Void> {
+	class NotificationAsyncTask extends AsyncTask<Void, Integer, Integer> {
+
+		SQLException sqlException;
 
 		@Override
 		protected void onPreExecute() {
@@ -41,7 +53,7 @@ public class MainActivity extends ParentActivity {
 		}
 
 		@Override
-		protected Void doInBackground(Void... urls) {
+		protected Integer doInBackground(Void... urls) {
 
 			HttpHeaders requestHeaders = new HttpHeaders();
 
@@ -49,10 +61,12 @@ public class MainActivity extends ParentActivity {
 			requestHeaders.setAccept(Collections
 					.singletonList(MediaType.APPLICATION_JSON));
 
-			RestTemplate restTemplate = new RestTemplate();
+			HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+			requestFactory.setConnectTimeout(1000);
+			RestTemplate restTemplate = new RestTemplate(requestFactory);
 			restTemplate.getMessageConverters().add(
 					new StringHttpMessageConverter());
-			String returnValue = "";
+			String returnValue = "no_data";
 			String url = getString(R.string.base_uri)
 					+ "/v1/notifications.json";
 
@@ -82,18 +96,34 @@ public class MainActivity extends ParentActivity {
 
 			} catch (HttpClientErrorException e) {
 				if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
-					// TODO kezelni, ha nem sikerült az authentikáció
-
+					Intent intent = new Intent(getBaseContext(),
+							PrefsActivity.class);
+					startActivity(intent);
+					sqlException = new SQLException(
+							context.getString(R.string.bad_username));
+					return 1;
 				}
-				// TODO többi hibaüzenetre is kezelni, pl nem megy a
-				// szolgáltatás
+			} catch (RestClientException e) {
+				sqlException = new SQLException(
+						context.getString(R.string.connection_problem));
+				return 1;
 			}
-			return null;
+			if (!returnValue.equals("no_data")) {
+				return 0;
+			} else {
+				sqlException = new SQLException(
+						context.getString(R.string.connection_problem));
+				return 1;
+			}
 		}
 
 		@Override
-		protected void onPostExecute(Void result) {
-			refreshNotification(menu);
+		protected void onPostExecute(Integer result) {
+			if (result > 0) {
+				sqlErrorMessage(sqlException);
+			} else {
+				refreshNotification(menu);
+			}
 			dismissProgressDialog();
 		}
 
