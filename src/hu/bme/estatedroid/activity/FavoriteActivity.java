@@ -1,10 +1,10 @@
 package hu.bme.estatedroid.activity;
 
 import hu.bme.estatedroid.R;
+import hu.bme.estatedroid.adapter.FavoritePropertyAdapter;
 import hu.bme.estatedroid.model.FavoriteProperty;
 import hu.bme.estatedroid.model.Favorites;
 import hu.bme.estatedroid.model.Property;
-import hu.bme.estatredroid.adapter.FavoritePropertyAdapter;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

@@ -1,9 +1,9 @@
 package hu.bme.estatedroid.activity;
 
 import hu.bme.estatedroid.R;
+import hu.bme.estatedroid.adapter.NotificationAdapter;
 import hu.bme.estatedroid.model.Notification;
 import hu.bme.estatedroid.model.NotificationType;
-import hu.bme.estatredroid.adapter.NotificationAdapter;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

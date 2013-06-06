@@ -1,8 +1,8 @@
 package hu.bme.estatedroid.activity;
 
 import hu.bme.estatedroid.R;
+import hu.bme.estatedroid.adapter.PropertyAdapter;
 import hu.bme.estatedroid.model.Property;
-import hu.bme.estatredroid.adapter.PropertyAdapter;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package hu.bme.estatredroid.adapter;
+package hu.bme.estatedroid.adapter;
 
 import hu.bme.estatedroid.R;
 import hu.bme.estatedroid.helper.PropertyImageThumbLoader;
