@@ -4,6 +4,7 @@
     <!-- Global -->
     <string name="app_name">EstateDroid</string>
     <string name="hello_world">Hello world!</string>
+    <!-- Need to be set to proper host name -->
     <string name="base_uri">http://gorog.sch.bme.hu:8080/TestWeb</string>
     <string name="user_name">User name</string>
     <string name="password">Password</string>
